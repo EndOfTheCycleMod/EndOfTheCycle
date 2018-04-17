@@ -1,0 +1,1 @@
+class EC_StrategyElement extends X2DataSet;

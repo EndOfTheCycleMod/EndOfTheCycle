@@ -1,0 +1,1 @@
+class EC_StrategyElementTemplate extends X2DataTemplate;

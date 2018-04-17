@@ -1,0 +1,21 @@
+
+
+// BEGIN EXTRA_GLOBALS.UCI
+// The contents of this file are appended to Src/Core/globals.uci by the build script.
+// Place any extra macros here to avoid having to `include any macro files manually.
+// Note: This file contains types from all packages. Some macros may cause compiler errors in some packages.
+
+`define ECRULES EC_StrategyGameRuleSet(XComGameInfo(class'Engine'.static.GetCurrentWorldInfo().Game).GameRuleset)
+`define ECGAME EC_StrategyGame(class'Engine'.static.GetCurrentWorldInfo().Game)
+`define ECCAMSTACK EC_CameraStack(EC_StrategyCamera(EC_StrategyController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).PlayerCamera).CameraStack)
+
+`define ECPRES EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres)
+`define ECHUDBASE EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres).StrategyHUD
+`define ECHUD EC_UIStrategyHUD(EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres).StrategyHUD)
+
+
+
+
+
+
+// END EXTRA_GLOBALS.UCI

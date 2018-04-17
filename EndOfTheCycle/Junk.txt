@@ -1,0 +1,16 @@
+struct ECTileData
+{
+	var int TileFlags;
+};
+
+// tile flags
+// general tile type
+const EC_TILE_LAND					= 0x00000001; // this is a land tile. otherwise, this is water (ocean / lake)
+const EC_TILE_MOUNTAIN				= 0x00000002; // this is a mountain tile. impassable
+// biome
+const EC_TILE_TUNDRA				= 0x00000004; // this is snow/ice-covered
+const EC_TILE_TEMPERATE				= 0x00000008; // this is temperate
+const EC_TILE_ARID					= 0x00000010; // hot
+const EC_TILE_XENOFORM				= 0x00000020; // xenoform
+
+var private transient array<ECTileData> Data;

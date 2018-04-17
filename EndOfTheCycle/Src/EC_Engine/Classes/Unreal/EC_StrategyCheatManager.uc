@@ -1,0 +1,1 @@
+class EC_StrategyCheatManager extends XComCheatManager within EC_StrategyController;

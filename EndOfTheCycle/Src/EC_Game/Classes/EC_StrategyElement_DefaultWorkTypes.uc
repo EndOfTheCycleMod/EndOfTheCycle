@@ -1,0 +1,1 @@
+class EC_StrategyElement_DefaultWorkTypes extends EC_StrategyElement;

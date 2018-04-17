@@ -1,0 +1,9 @@
+Notes on packages:
+	EndOfTheCycle is the default package. Don't use it for anything particularly interesting
+	EC_Engine is the package that contains the unreal interfaces and control logic
+	EC_Framework is the package that contains fundamental gameplay mechanics such as Work, Units, Entities, Mission, as well as map types, ...
+	EC_Game is the package that contains the high-level templates, such as research / construction work / enemies, ...
+	maybe make a separate package for generic UI?
+
+The Highlander is a git submodule.
+The master branch of the submodule is what we are working with, the ec_dev branch has only ec_specific changes. They are merged into master afterwards.

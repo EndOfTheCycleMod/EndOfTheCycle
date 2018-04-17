@@ -1,0 +1,137 @@
+class EC_StrategyController extends XComPlayerController;
+
+var bool                                m_bAffectsHUD;
+var bool                                m_bInCinematicMode;
+
+/* SetPause()
+ Try to pause game; returns success indicator.
+ Replicated to server in network games.
+ */
+function bool SetPause( bool bPause, optional delegate<CanUnpause> CanUnpauseDelegate=CanUnpause, optional bool bFromLossOfFocus)
+{
+	local bool bResult;
+	
+	bResult = super.SetPause(bPause, CanUnpauseDelegate, bFromLossOfFocus);
+
+	if( EC_StrategyPresentationLayer(Pres).Get3DMovie() != none )
+	{
+		EC_StrategyPresentationLayer(Pres).Get3DMovie().SetPause(bPause);
+	}
+
+	return bResult;
+}
+
+function SetCinematicMode( bool bInCinematicMode, bool bHidePlayer, bool bAffectsHUD, bool bAffectsMovement, bool bAffectsTurning, bool bAffectsButtons, optional bool bDoClientRPC = true, optional bool bOverrideUserMusic = false )
+{
+	super.SetCinematicMode( bInCinematicMode, bHidePlayer, bAffectsHUD, bAffectsMovement, bAffectsTurning, bAffectsButtons, bDoClientRPC, bOverrideUserMusic );
+
+	CinematicModeToggled(bInCinematicMode, bAffectsMovement, bAffectsTurning, bAffectsHUD);
+}
+
+simulated function CinematicModeToggled(bool bInCinematicMode, bool bAffectsMovement, bool bAffectsTurning, bool bAffectsHUD)
+{
+	m_bInCinematicMode = bInCinematicMode;
+	m_bAffectsHUD = bAffectsHUD;
+
+	if (bInCinematicMode)
+	{
+		if( PlayerCamera != none )
+			PlayerCamera.ClearAllCameraShakes();
+
+		if (bAffectsHUD)
+		{
+			Pres.HideUIForCinematics();
+			
+			//ConsoleCommand( "SetPPVignette "@string(!bInCinematicMode));
+		}
+		if( PlayerCamera != none )
+			PlayerCamera.PushState('CinematicView');
+
+		PushState( 'CinematicMode' );
+	}
+	else
+	{
+		if (bAffectsHUD)
+		{
+			Pres.ShowUIForCinematics();
+			//ConsoleCommand( "SetPPVignette "@string(!bInCinematicMode));
+		}
+
+		if( PlayerCamera != none && PlayerCamera.IsInState('CinematicView',true) )
+		{
+			while( PlayerCamera.IsInState('CinematicView', true) )
+				PlayerCamera.PopState();
+
+			XComBaseCamera(PlayerCamera).bHasOldCameraState = false; //Force an instant transition
+			PlayerCamera.ResetConstrainAspectRatio();
+		}
+
+		PopState();
+	}
+}
+
+simulated function SetInputState( name nStateName, optional bool bForce )
+{
+	XComHeadquartersInput( PlayerInput ).GotoState( nStateName );
+}
+
+state CinematicMode
+{
+	event BeginState(Name PreviousStateName)
+	{
+		super.BeginState(PreviousStateName);
+	}
+
+	event EndState(Name NextStateName)
+	{
+		super.EndState(NextStateName);
+	}
+/*
+	// don't show menu in cenematic mode - the button skips the cinematic
+	exec function ShowMenu();
+
+	// dont playe selection sound
+	exec function PlayUnitSelectSound();*/
+}
+
+/** Start as PhysicsSpectator by default */
+auto state PlayerWaiting
+{
+
+Begin:
+	PlayerReplicationInfo.bOnlySpectator = false;
+	WorldInfo.Game.bRestartLevel = false;
+	WorldInfo.Game.RestartPlayer( Self );
+	WorldInfo.Game.bRestartLevel = true;
+	SetCameraMode('ThirdPerson');
+}
+
+/**
+ * Looks at the current game state and uses that to set the
+ * rich presence strings
+ *
+ * Licensees (that's us!) should override this in their player controller derived class
+ */
+reliable client function ClientSetOnlineStatus()
+{
+	`ONLINEEVENTMGR.SetOnlineStatus(OnlineStatus_InGameSP);
+}
+
+
+function DrawDebugData(HUD H)
+{
+	DrawDebugLabels(H.Canvas);
+}
+
+function DrawDebugLabels(Canvas kCanvas)
+{
+	`ECRULES.DrawDebugLabel(kCanvas);
+}
+
+defaultproperties
+{
+	CameraClass=class'EC_StrategyCamera'
+	InputClass=class'EC_StrategyInput'
+	CheatClass=class'EC_StrategyCheatManager'
+	PresentationLayerClass=class'EC_StrategyPresentationLayer'
+}
