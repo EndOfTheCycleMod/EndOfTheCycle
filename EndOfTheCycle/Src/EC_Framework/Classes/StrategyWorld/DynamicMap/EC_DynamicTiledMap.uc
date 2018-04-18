@@ -30,6 +30,8 @@ var MaterialInstanceConstant MIC_Mountain;
 var int Width, Height;
 var array<StaticMeshComponent> TileMeshes;
 
+var transient vector MouseWorldOrigin, MouseWorldDirection;
+
 var transient int LastHoveredTile;
 
 // EC_Hex.M_Hex / EC_Hex.SM_Hex
@@ -78,6 +80,7 @@ function LoadMap()
 		for (x = 0; x < Width; x++)
 		{
 			SMC = new class'StaticMeshComponent';
+			SMC.SetTraceBlocking(true, true);
 			SMC.SetStaticMesh(HexMesh);
 			switch (MapData.Tiles[y * Width + x])
 			{
@@ -228,8 +231,6 @@ function string GetPositionDebugInfo(int Pos)
 }
 
 
-
-
 private function IntPoint GetTile2DCoords(int TileHandle)
 {
 	local IntPoint P;
@@ -255,28 +256,26 @@ private function bool IsPointOnBoard(int x, int y)
 
 simulated event PostRenderFor(PlayerController kPC, Canvas kCanvas, vector vCameraPosition, vector vCameraDir)
 {
-	local vector MouseWorldOrigin, MouseWorldDirection;
 	local vector2d MouseLocation;
 
 	local Vector HitLocation, HitNormal;
 	local TraceHitInfo TraceInfo;
 	local EC_DynamicTiledMap HitActor;
 	local int HitCompIndex;
+	local vector TrEnd;
 
-	local UIMouseCursor Cursor;
-
-	Cursor = `PRESBASE.m_kUIMouseCursor;
-
-	Cursor.UpdateMouseLocation();
-	MouseLocation = Cursor.m_v2MouseLoc;
+	MouseLocation = LocalPlayer(GetALocalPlayerController().Player).ViewportClient.GetMousePosition();
 	kCanvas.DeProject(MouseLocation, MouseWorldOrigin, MouseWorldDirection);
 
+	TrEnd = MouseWorldOrigin + (MouseWorldDirection * 16384);
+
+//	`log("Trace from ("$MouseWorldOrigin.X$", "$MouseWorldOrigin.Y$", "$MouseWorldOrigin.Z$") to ("$TrEnd.X$", "$TrEnd.Y$", "$TrEnd.Z$")");
 	// Do a simple bullet trace against the map itself
-	foreach TraceActors(class'EC_DynamicTiledMap',
+	foreach WorldInfo.TraceActors(class'EC_DynamicTiledMap',
 								HitActor,
 								HitLocation,
 								HitNormal,
-								MouseWorldOrigin + (MouseWorldDirection * 16384),
+								TrEnd,
 								MouseWorldOrigin,
 								vect(0,0,0),
 								TraceInfo,
@@ -293,8 +292,22 @@ simulated event PostRenderFor(PlayerController kPC, Canvas kCanvas, vector vCame
 	LastHoveredTile = INDEX_NONE;
 }
 
+event Tick(float DeltaTime)
+{
+	//`ECSHAPES.DrawCylinder(MouseWorldOrigin, MouseWorldOrigin + (MouseWorldDirection * 16384), 30);
+}
+
 defaultproperties
 {
 	Directions(0)=(p[0]=(X=1, Y=0), p[1]=(X=0, Y=-1), p[2]=(X=-1, Y=-1), p[3]=(X=-1, Y=0), p[4]=(X=-1, Y=1), p[5]=(X=0, Y=1))
 	Directions(1)=(p[0]=(X=1, Y=0), p[1]=(X=1, Y=-1), p[2]=(X=0, Y=-1), p[3]=(X=-1, Y=0), p[4]=(X=0, Y=1), p[5]=(X=1, Y=1))
+
+	// TODO: Evaluate
+	bStatic=false
+	bStaticCollision=true
+	bWorldGeometry=true
+	bCollideActors=true
+	bBlockActors=true
+	bMovable=false
+	CollisionType=COLLIDE_BlockAll
 }

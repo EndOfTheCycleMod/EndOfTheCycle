@@ -13,7 +13,7 @@
 `define ECHUDBASE EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres).StrategyHUD
 `define ECHUD EC_UIStrategyHUD(EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres).StrategyHUD)
 
-
+`define ECSHAPES EC_StrategyGame(class'Engine'.static.GetCurrentWorldInfo().Game).ShapeMgr
 
 
 

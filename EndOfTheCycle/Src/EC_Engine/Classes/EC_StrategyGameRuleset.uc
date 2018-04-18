@@ -378,6 +378,7 @@ simulated function DrawDebugLabel(Canvas kCanvas)
 	local int iX, iY;
 	local ECPotentialTurnPhaseAction Action;
 	local EC_GameState_StrategyPlayer Player;
+	local int Tile;
 	
 	iX=250;
 	iY=50;
@@ -395,7 +396,34 @@ simulated function DrawDebugLabel(Canvas kCanvas)
 		kStr = kStr$"    "$Action.DebugString$"\n";
 	}
 
+	Tile = `ECGAME.Map.GetCursorHighlightedTile();
+	if (Tile >= 0)
+	{
+		kStr = kStr $ `ECGAME.Map.GetPositionDebugInfo(Tile) $ "\n";
+	}
+	else
+	{
+		kStr = kStr$"No tile highlighted\n";
+	}
+
 	kCanvas.SetPos(iX, iY);
 	kCanvas.SetDrawColor(0,255,0);
 	kCanvas.DrawText(kStr);
+
+
+}
+
+simulated event Tick(float DeltaTime)
+{
+	local vector Pos;
+	local rotator Rot;
+	local int Tile;
+
+	Tile = `ECGAME.Map.GetCursorHighlightedTile();
+	if (Tile >= 0)
+	{
+		`ECGAME.Map.GetWorldPositionAndRotation(Tile, Pos, Rot);
+		`ECSHAPES.DrawSphere(Pos, vect(15,15,15), MakeLinearColor(0,0,1,1), false);
+	}
+	`ECSHAPES.DrawSphere(vect(0,0,10), vect(45,45,45), MakeLinearColor(0,0,1,1), false);
 }

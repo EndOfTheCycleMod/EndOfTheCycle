@@ -4,6 +4,8 @@ var IEC_StrategyMap Map;
 var EC_Pathfinder DefaultPathfinder;
 
 
+var SimpleShapeManager ShapeMgr;
+
 // GameInfo Interface
 function StartMatch()
 {
@@ -11,6 +13,7 @@ function StartMatch()
 	local XComOnlineEventMgr OnlineEventMgr;
 
 	super.StartMatch();
+	ShapeMgr = Spawn(class'UncookedSimpleShapeManager');
 	`log("######## StartMatch ########");
 
 	// Ensure that the player has the correct rich presence

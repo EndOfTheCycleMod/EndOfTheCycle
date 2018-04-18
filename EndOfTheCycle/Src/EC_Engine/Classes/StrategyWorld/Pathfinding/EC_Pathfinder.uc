@@ -17,7 +17,8 @@ struct PathfindingNode
 {
 	var int Tile;
 	var int Distance;
-	var int VisitedViaIndex; // Index into the PathfindingResult's array of 
+	var int VisitedViaIndex; // Index into the PathfindingResult's array of Nodes
+	var int TraversalType;
 };
 
 // Stores properties of a given movable object about its mobility
@@ -39,7 +40,8 @@ struct PathfindingResult
 	var int GoalTile;
 	// Copy of the mover data used
 	var MoverData Data;
-	// Array containing the node exploration. If G
+	// Array containing the node exploration. If GoalTile >= 0, the last
+	// entry is the goal.
 	var array<PathfindingNode> Nodes;
 };
 
