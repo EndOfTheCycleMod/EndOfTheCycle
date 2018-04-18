@@ -105,6 +105,7 @@ function LoadMap()
 			TileMeshes.AddItem(SMC);
 		}
 	}
+	// Register for the PostRender function that lets us project the mouse cursor
 	AddHUDOverlayActor();
 }
 
@@ -133,14 +134,12 @@ function array<int> GetAdjacentMapPositions(int Pos)
 {
 	local IntPoint P;
 	local array<int> arr;
-	local int parity;
 	local PointNeighbors points;
 	local IntPoint TempPoint;
 	local int i;
 	
 	P = GetTile2DCoords(Pos);
-	parity = P.Y & 1;
-	points = Directions[parity];
+	points = Directions[P.Y & 1];
 	for (i = 0; i < ArrayCount(points.p); i++)
 	{
 		TempPoint.X = P.X + points.p[i].X;
@@ -178,6 +177,38 @@ function bool GetWorldPositionAndRotation(int PosHandle, out vector pos, out rot
 function int GetCursorHighlightedTile()
 {
 	return LastHoveredTile;
+}
+
+function int GetTileInfo(int Pos)
+{
+	local EC_GameState_MapTileData MapData;
+
+	MapData = EC_GameState_MapTileData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'EC_GameState_MapTileData'));
+
+	switch (MapData.Tiles[Pos])
+	{
+		case eECTT_Water:
+			return class'IEC_StrategyMap'.const.TILE_WATER;
+		case eECTT_Flat:
+			return class'IEC_StrategyMap'.const.TILE_GROUND;
+		case eECTT_Wilderness:
+			return class'IEC_StrategyMap'.const.TILE_VEGETATION;
+		case eECTT_Mountain:
+			return class'IEC_StrategyMap'.const.TILE_MOUNTAIN;
+	}
+}
+
+function array<IntPoint> GetValidPositionRanges()
+{
+	local IntPoint P;
+	local array<IntPoint> ret;
+
+	// Most simple of maps
+	P.X = 0;
+	P.Y = (Width * Height) - 1;
+	ret.AddItem(P);
+
+	return ret;
 }
 
 static function CreateRandomMap(XComGameState NewGameState)

@@ -13,6 +13,12 @@ function StateObjectReference Ent_GetStrategyOwningPlayer();
 // get the currently controlling player of this entity
 function StateObjectReference Ent_GetStrategyControllingPlayer();
 
+// Ent_isMovable should return the general possibility of
+// this unit moving. Even units that are temporarily not able to move
+// (mobility 0) can return true
+function bool Ent_IsMovable();
+function MoverData Ent_GetMoverData();
+
 
 // find the visualizer
 function Actor Ent_GetVisualizer();

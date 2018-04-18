@@ -27,9 +27,23 @@ const PLR_RELATION_MAY_ATTACK				= 0x0000003; // (PLR_RELATION_WAR | PLR_RELATIO
 
 
 
-var protectedwrite name m_TemplateName;
+var private name m_TemplateName;
 var protectedwrite array<PlayerRelation> m_PlayerRelations;
 
+static function EC_StrategyElementTemplateManager GetMyTemplateManager()
+{
+	return class'EC_StrategyElementTemplateManager'.static.GetStrategyElementTemplateManager();
+}
+
+simulated function name GetMyTemplateName()
+{
+	return self.m_TemplateName;
+}
+
+simulated function EC_StrategyPlayerTemplate GetMyTemplate()
+{
+	return EC_StrategyPlayerTemplate(GetMyTemplateManager().FindStrategyElementTemplate(self.m_TemplateName));
+}
 
 function OnCreation(optional X2DataTemplate Template)
 {

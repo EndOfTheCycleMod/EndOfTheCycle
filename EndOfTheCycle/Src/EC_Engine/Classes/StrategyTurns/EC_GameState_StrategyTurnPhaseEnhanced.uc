@@ -49,7 +49,6 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 	local XComGameState NewGameState;
 
 	History = `XCOMHISTORY;
-	`log("Processing turn phase");
 
 	NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Process Turn Phase" @ m_TemplateName @ "@ step" @ GetEnum(Enum'ECTurnPhaseStep', Step));
 	
@@ -65,13 +64,11 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 	{
 		// move back to step if we still have actions
 		// actions should be independent of step
-		`log("Move to step from Finalize");
 		LocalPhase = EC_GameState_StrategyTurnPhaseEnhanced(NewGameState.ModifyStateObject(self.Class, self.ObjectID));
 		LocalPhase.Step = eECTPS_Step;
 	}
 	else if (Step == eECTPS_Step && Result.PotentialActions.Length == 0)
 	{
-		`log("Steppin'");
 		if (RequiresPlayerInputToEnd())
 		{
 			// add an action that moves us to finalize when the player presses a button
@@ -111,8 +108,6 @@ function EventListenerReturn OnUserConfirmContinue(Object EventData, Object Even
 {
 	local XComGameState NewGameState;
 	local EC_GameState_StrategyTurnPhaseEnhanced LocalPhase;
-	
-	`log("Received finalize event");
 
 	if (Step == eECTPS_Step && `ECRULES.WaitingForUserContinue())
 	{	
@@ -120,7 +115,6 @@ function EventListenerReturn OnUserConfirmContinue(Object EventData, Object Even
 		LocalPhase = EC_GameState_StrategyTurnPhaseEnhanced(NewGameState.ModifyStateObject(self.Class, self.ObjectID));
 		LocalPhase.Step = eECTPS_Finalize;
 		`GAMERULES.SubmitGameState(NewGameState);
-		`log("Finalized");
 	}
 
 	return ELR_NoInterrupt;

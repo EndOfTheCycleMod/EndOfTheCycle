@@ -23,10 +23,8 @@ simulated function InitUIScreens()
 
 simulated function PollForUIScreensComplete()
 {
-	`log("tick");
 	if (`ECRULES.isReady)
 	{
-		`log("tock");
 		ClearTimer( 'PollForUIScreensComplete' );
 		InitUIScreensComplete();
 	}

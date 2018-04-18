@@ -138,10 +138,18 @@ state InitGame
 
 	function LoadMap()
 	{
+		local EC_GameState_CampaignSetupData SetupData;
 		local class MapClass;
-		MapClass = Class(`CONTENT.RequestGameArchetype("EC_Framework.EC_DynamicTiledMap"));
+		SetupData = EC_GameState_CampaignSetupData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'EC_GameState_CampaignSetupData'));
+		MapClass = class'Engine'.static.FindClassType(SetupData.StrategyMapActorClassPath);
 		`ECGAME.Map = IEC_StrategyMap(Spawn(class<Actor>(MapClass)));
 		`ECGAME.Map.LoadMap();
+	}
+	
+	function CreateDefaultPathfinder()
+	{
+		`ECGAME.DefaultPathfinder = Spawn(class'EC_Pathfinder');
+		`ECGAME.DefaultPathfinder.Init(`ECGAME.Map);
 	}
 
 	function bool MapLoading()
@@ -156,6 +164,7 @@ Begin:
 	{
 		Sleep(0.0f);
 	}
+	CreateDefaultPathfinder();
 	Sleep(1.0f);
 
 	`PRESBASE.UIStopMovie();
@@ -322,6 +331,22 @@ simulated function name GetNextState(name CurrentState, optional name DefaultPha
 }
 
 
+simulated function array<ECPotentialTurnPhaseAction> GetActionsForPlayer(StateObjectReference Player)
+{
+	local array<ECPotentialTurnPhaseAction> Actions;
+	local int i;
+
+	for (i = 0; i < CachedTurnPhaseResult.PotentialActions.Length; i++)
+	{
+		if (CachedTurnPhaseResult.PotentialActions[i].Player.ObjectID == Player.ObjectID)
+		{
+			Actions.AddItem(CachedTurnPhaseResult.PotentialActions[i]);
+		}
+	}
+	return Actions;
+}
+
+
 // Make modifications to the strategy start state to get a campaign rolling
 static function SetupGameStartState(XComGameState StartState)
 {
@@ -362,7 +387,7 @@ simulated function DrawDebugLabel(Canvas kCanvas)
 	kStr = kStr$"Rules Engine (State"@GetStateName()@")\n";
 	kStr = kStr$"=========================================================================================\n";	
 	kStr = kStr$"\n";
-	kStr = kStr$"Current Player:" @ Player.m_TemplateName $"\n";
+	kStr = kStr$"Current Player:" @ Player.GetMyTemplateName() $"\n";
 	kStr = kStr$"\n";
 	kStr = kStr$"Cached Result:\n";
 	foreach CachedTurnPhaseResult.PotentialActions(Action)

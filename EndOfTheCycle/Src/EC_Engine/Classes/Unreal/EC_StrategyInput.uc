@@ -123,3 +123,19 @@ simulated function bool AttemptScrollCamera(int ActionMask, float X, float Y)
 	}
 	return false;
 }
+
+
+simulated function bool EscapeKey( int ActionMask )
+{
+	return Start_Button(ActionMask);
+}
+
+function bool Start_Button( int ActionMask )
+{
+	if (( ActionMask & class'UIUtilities_Input'.const.FXS_ACTION_RELEASE) != 0)
+	{
+		`ECPRES.UIPauseMenu(, !`ECRULES.IsSavingAllowed());
+		return true;
+	}
+	return false;
+}

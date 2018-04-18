@@ -29,7 +29,7 @@ struct ECPotentialTurnPhaseAction
 {
 	var ECPotentialTurnPhaseActionType Type;
 	var StateObjectReference Source;
-	var StateObjectReference Player;
+	var StateObjectReference Player; // The player responsible for this action
 
 	// Appearance
 	var string DisplayName;
@@ -41,7 +41,7 @@ struct ECPotentialTurnPhaseAction
 	// with Source as Data and Source
 	var name EventName;
 
-	var string DebugString;
+	var string DebugString; // Shown in debug UI
 };
 
 struct ECTurnPhaseProcessResult

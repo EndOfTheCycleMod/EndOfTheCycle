@@ -1,6 +1,7 @@
 class EC_StrategyGame extends XComGameInfo;
 
 var IEC_StrategyMap Map;
+var EC_Pathfinder DefaultPathfinder;
 
 
 // GameInfo Interface
@@ -54,13 +55,19 @@ End:
 static function CreateStrategyStartState()
 {
 	local XComGameState NewGameState;
-	local IEC_StrategyMap Map;
+	local class MapClassBase;
+	local IEC_StrategyMap MapClassCDO;
+	local EC_GameState_CampaignSetupData Data;
 
 	NewGameState = class'EC_GameStateContext_StartStateChangeContainer'.static.CreateChangeState("Create New Strategy Start");
-
-	// TODO:
-	Map = IEC_StrategyMap(`CONTENT.RequestGameArchetype("EC_Framework.Default__EC_DynamicTiledMap"));
-	Map.CreateRandomMap(NewGameState);
+	Data = EC_GameState_CampaignSetupData(NewGameState.CreateNewStateObject(class'EC_GameState_CampaignSetupData'));
+	// TODO
+	MapClassBase = class'XComEngine'.static.GetClassByName('EC_DynamicTiledMap');
+	Data.StrategyMapActorClassPath = PathName(MapClassBase);
+	// Warning: Interface meta casts are broken and don't work!!
+	// As a workaround, request the CDO
+	MapClassCDO = IEC_StrategyMap(class'XComEngine'.static.GetClassDefaultObject(MapClassBase));
+	MapClassCDO.static.CreateRandomMap(NewGameState);
 
 	class'EC_StrategyGameRuleset'.static.SetupGameStartState(NewGameState);
 
