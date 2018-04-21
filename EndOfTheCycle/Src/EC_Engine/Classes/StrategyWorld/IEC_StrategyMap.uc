@@ -6,6 +6,9 @@ const TILE_VEGETATION   = 0x0002; // Dense vegetation
 const TILE_WATER        = 0x0004; // Water tiles
 const TILE_MOUNTAIN     = 0x0008; // Mountain tiles
 
+const EDGE_CLIFF        = 0x0001;
+const EDGE_RIVER        = 0x0002;
+
 function LoadMap();
 // Polling function for LoadMap
 function bool IsLoaded();
@@ -17,6 +20,8 @@ function X2Camera CreateDefaultCamera();
 // consistent over the course of a campaign, even handling potential map updates gracefully.
 // A position is a non-negative integer. These integers need not be continuous,
 // but are encouraged to be continuous since this improves performance for certain functions (see GetValidPositionRanges)
+// The Pathfinder stores the positions in a dense array (improving performance at the cost of memory), so the ranges should
+// be reasonably bounded.
 // It should be noted that these functions should only be used by Engine classes -- a class
 // implementing this interface is not the authority about pathing queries. These functions simply
 // return the base map's features to the Pathing system, which may apply additional rules (like teleporters or w/e)
@@ -30,6 +35,10 @@ function int GetCursorHighlightedTile();
 
 // Return one of the TILE_ consts above
 function int GetTileInfo(int Pos);
+// Return any of the EDGE_ consts above
+function int GetEdgeInfo(int Pos);
+// The shortest tile distance, disregarding any terrain types or features
+function int GetTileDistance(int A, int B);
 
 // Return an array of inclusive ranges representing valid tile handles
 // The Map interface doesn't require that this is a good representation,

@@ -19,9 +19,9 @@ function TPOV GetCameraLocationAndOrientation()
 
 	POV.FOV = 60;
 	POV.Rotation.Pitch = -38 * DegToUnrRot;
-	POV.Rotation.Yaw = 90 * DegToUnrRot;
+	POV.Rotation.Yaw = 270 * DegToUnrRot;
 	POV.Rotation.Roll = 0 * DegToUnrRot;
-	POV.Location = CurrentLookAt + (1200 * vect(0,0,1)) - (1200 * sin(-38 * PI / 180) * vect(0,-1,0));
+	POV.Location = CurrentLookAt + (1200 * vect(0,0,1)) - (1200 * sin(38 * PI / 180) * vect(0,-1,0));
 
 	return POV;
 }
@@ -32,8 +32,8 @@ function TPOV GetCameraLocationAndOrientation()
 /// </summary>
 function ScrollCamera(Vector2D Offset)
 {
-	TargetLookAt.X -= Offset.X;
-	TargetLookAt.Y += Offset.Y;
+	TargetLookAt.X += Offset.X;
+	TargetLookAt.Y -= Offset.Y;
 }
 
 /// <summary>

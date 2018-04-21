@@ -42,3 +42,15 @@ exec function LogCameraTPOV()
 	`log(`showvar(CamTPOV.Rotation.Yaw));
 	`log(`showvar(CamTPOV.FOV));
 }
+
+// Test function
+exec function TestHexMapDistances()
+{
+	local EC_DynamicTiledMap Map;
+
+	Map = EC_DynamicTiledMap(`ECMAP);
+	if (Map != none)
+	{
+		Map.RunTests();
+	}
+}

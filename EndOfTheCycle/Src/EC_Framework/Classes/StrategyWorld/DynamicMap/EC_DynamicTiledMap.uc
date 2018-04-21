@@ -36,6 +36,8 @@ var transient int LastHoveredTile;
 
 // EC_Hex.M_Hex / EC_Hex.SM_Hex
 
+// IEC_StrategyMap interface
+
 function LoadMap()
 {
 	local Material ParentMat;
@@ -147,7 +149,7 @@ function array<int> GetAdjacentMapPositions(int Pos)
 	{
 		TempPoint.X = P.X + points.p[i].X;
 		TempPoint.Y = P.Y + points.p[i].Y;
-		if (IsPointOnBoard(TempPoint.X, TempPoint.Y))
+		if (TempPoint.X > -1 && TempPoint.Y > -1 && TempPoint.X < Width && TempPoint.Y < Height)
 		{
 			arr.AddItem(GetHandleFromPoint(TempPoint));
 		}
@@ -201,6 +203,24 @@ function int GetTileInfo(int Pos)
 	}
 }
 
+function int GetEdgeInfo(int Pos)
+{
+	return 0;
+}
+
+function int GetTileDistance(int A, int B)
+{
+	local IntPoint PA, PB;
+
+	PA = GetTile2DCoords(A);
+	PB = GetTile2DCoords(B);
+
+	return Max(Max(
+		Abs(PB.Y - PA.Y),     
+		Abs(FCeil(PB.Y / -2.0f) + PB.X - FCeil(PA.Y / -2.0f) - PA.X)),
+		Abs(-PB.Y - FCeil(PB.Y / -2.0f) - PB.X + PA.Y  + FCeil(PA.Y / -2.0f) + PA.X));
+}
+
 function array<IntPoint> GetValidPositionRanges()
 {
 	local IntPoint P;
@@ -227,11 +247,11 @@ function string GetPositionDebugInfo(int Pos)
 {
 	local IntPoint P;
 	P = GetTile2DCoords(Pos);
-	return "Position at X:" @ P.X $ ", Y:" @ P.Y;
+	return "(X:" @ P.X $ ", Y:" @ P.Y $ ")";
 }
 
-
-private function IntPoint GetTile2DCoords(int TileHandle)
+// TODO: Inline these private functions so we can squeeze a bit of performance
+private final function IntPoint GetTile2DCoords(int TileHandle)
 {
 	local IntPoint P;
 	P.X = TileHandle % Width;
@@ -239,19 +259,14 @@ private function IntPoint GetTile2DCoords(int TileHandle)
 	return P;
 }
 
-private function int GetHandleFromCoords(int x, int y)
+private final function int GetHandleFromCoords(int x, int y)
 {
 	return y * Width + x;
 }
 
-private function int GetHandleFromPoint(IntPoint p)
+private final function int GetHandleFromPoint(IntPoint p)
 {
 	return p.y * Width + p.x;
-}
-
-private function bool IsPointOnBoard(int x, int y)
-{
-	return x > -1 && y > -1 && x < Width && y < Height;
 }
 
 simulated event PostRenderFor(PlayerController kPC, Canvas kCanvas, vector vCameraPosition, vector vCameraDir)
@@ -295,6 +310,34 @@ simulated event PostRenderFor(PlayerController kPC, Canvas kCanvas, vector vCame
 event Tick(float DeltaTime)
 {
 	//`ECSHAPES.DrawCylinder(MouseWorldOrigin, MouseWorldOrigin + (MouseWorldDirection * 16384), 30);
+}
+
+
+`define assrt(a,b) InAssertEquals(`{a}, `{b}, "`{a}", string(`{b}));
+
+simulated function RunTests()
+{
+	`assrt(GetTileDistance(4,4), 0);
+	`assrt(GetTileDistance(GetHandleFromCoords(4,5),GetHandleFromCoords(4,4)), 1);
+	`assrt(GetTileDistance(GetHandleFromCoords(5,4),GetHandleFromCoords(4,4)), 1);
+	`assrt(GetTileDistance(GetHandleFromCoords(2,2),GetHandleFromCoords(1,3)), 1);
+	`assrt(GetTileDistance(GetHandleFromCoords(2,2),GetHandleFromCoords(3,3)), 2);
+	`assrt(GetTileDistance(GetHandleFromCoords(0,0),GetHandleFromCoords(3,3)), 5);
+	`assrt(GetTileDistance(GetHandleFromCoords(0,39),GetHandleFromCoords(59,0)), 39+39);
+	`assrt(GetTileDistance(GetHandleFromCoords(0,39),GetHandleFromCoords(58,0)), 39+38);
+	`assrt(GetTileDistance(GetHandleFromCoords(0,0),GetHandleFromCoords(59,39)), 39+40);
+}
+
+private final function InAssertEquals(int A, int B, string S, string T)
+{
+	if (A == B)
+	{
+		`log("OK:" @ S @ "==" @ T);
+	}
+	else
+	{
+		`log("FAIL:" @ S @ "is" @ A $ ", expected" @ T);
+	}
 }
 
 defaultproperties

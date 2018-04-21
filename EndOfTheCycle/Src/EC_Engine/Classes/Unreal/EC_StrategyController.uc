@@ -126,6 +126,7 @@ function DrawDebugData(HUD H)
 function DrawDebugLabels(Canvas kCanvas)
 {
 	`ECRULES.DrawDebugLabel(kCanvas);
+	`ECCHEAT.DrawDebugLabel(kCanvas);
 }
 
 defaultproperties

@@ -7,14 +7,22 @@
 
 `define ECRULES EC_StrategyGameRuleSet(XComGameInfo(class'Engine'.static.GetCurrentWorldInfo().Game).GameRuleset)
 `define ECGAME EC_StrategyGame(class'Engine'.static.GetCurrentWorldInfo().Game)
+`define ECMAP EC_StrategyGame(class'Engine'.static.GetCurrentWorldInfo().Game).Map
 `define ECCAMSTACK EC_CameraStack(EC_StrategyCamera(EC_StrategyController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).PlayerCamera).CameraStack)
 
 `define ECPRES EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres)
 `define ECHUDBASE EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres).StrategyHUD
 `define ECHUD EC_UIStrategyHUD(EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres).StrategyHUD)
 
+`define ECCHEAT EC_StrategyCheatManager(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController().CheatManager)
+
 `define ECSHAPES EC_StrategyGame(class'Engine'.static.GetCurrentWorldInfo().Game).ShapeMgr
 
+
+// The pathfinder uses integer distances. The base cost of a single simple tile movement
+// I.e. if the unit has three action points, it has 360 movement units
+// 120 is a highly composite number, allowing for accurate and intuitive calculation
+`define MOVE_DENOMINATOR 120
 
 
 

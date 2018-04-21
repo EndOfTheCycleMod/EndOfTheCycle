@@ -143,18 +143,18 @@ state InitGame
 		SetupData = EC_GameState_CampaignSetupData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'EC_GameState_CampaignSetupData'));
 		MapClass = class'Engine'.static.FindClassType(SetupData.StrategyMapActorClassPath);
 		`ECGAME.Map = IEC_StrategyMap(Spawn(class<Actor>(MapClass)));
-		`ECGAME.Map.LoadMap();
+		`ECMAP.LoadMap();
 	}
 	
 	function CreateDefaultPathfinder()
 	{
 		`ECGAME.DefaultPathfinder = Spawn(class'EC_Pathfinder');
-		`ECGAME.DefaultPathfinder.Init(`ECGAME.Map);
+		`ECGAME.DefaultPathfinder.Init(`ECMAP);
 	}
 
 	function bool MapLoading()
 	{
-		return !`ECGAME.Map.IsLoaded();
+		return !`ECMAP.IsLoaded();
 	}
 
 Begin:
@@ -172,7 +172,7 @@ Begin:
 	class'WorldInfo'.static.GetWorldInfo().MyLocalEnvMapManager.SetEnableCaptures(true);
 	XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).bProcessedTravelDestinationLoaded = true;
 	class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController().ClientSetCameraFade(false);
-	`ECCAMSTACK.AddCamera(`ECGAME.Map.CreateDefaultCamera());
+	`ECCAMSTACK.AddCamera(`ECMAP.CreateDefaultCamera());
 
 	isReady = true;
 	PopState();
@@ -379,6 +379,7 @@ simulated function DrawDebugLabel(Canvas kCanvas)
 	local ECPotentialTurnPhaseAction Action;
 	local EC_GameState_StrategyPlayer Player;
 	local int Tile;
+	local IEC_StrategyMap Map;
 	
 	iX=250;
 	iY=50;
@@ -396,14 +397,18 @@ simulated function DrawDebugLabel(Canvas kCanvas)
 		kStr = kStr$"    "$Action.DebugString$"\n";
 	}
 
-	Tile = `ECGAME.Map.GetCursorHighlightedTile();
-	if (Tile >= 0)
+	Map = `ECMAP;
+	if (Map != none)
 	{
-		kStr = kStr $ `ECGAME.Map.GetPositionDebugInfo(Tile) $ "\n";
-	}
-	else
-	{
-		kStr = kStr$"No tile highlighted\n";
+		Tile = Map.GetCursorHighlightedTile();
+		if (Tile >= 0)
+		{
+			kStr = kStr $ Map.GetPositionDebugInfo(Tile) $ "\n";
+		}
+		else
+		{
+			kStr = kStr$"No tile highlighted\n";
+		}
 	}
 
 	kCanvas.SetPos(iX, iY);
@@ -419,10 +424,10 @@ simulated event Tick(float DeltaTime)
 	local rotator Rot;
 	local int Tile;
 
-	Tile = `ECGAME.Map.GetCursorHighlightedTile();
+	Tile = `ECMAP.GetCursorHighlightedTile();
 	if (Tile >= 0)
 	{
-		`ECGAME.Map.GetWorldPositionAndRotation(Tile, Pos, Rot);
+		`ECMAP.GetWorldPositionAndRotation(Tile, Pos, Rot);
 		`ECSHAPES.DrawSphere(Pos, vect(15,15,15), MakeLinearColor(0,0,1,1), false);
 	}
 	`ECSHAPES.DrawSphere(vect(0,0,10), vect(45,45,45), MakeLinearColor(0,0,1,1), false);
