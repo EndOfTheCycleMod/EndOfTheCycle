@@ -13,6 +13,27 @@ class X2DownloadableContentInfo_EndOfTheCycle extends X2DownloadableContentInfo;
 static event OnPostTemplatesCreated()
 {
 	`log("X2DownloadableContentInfo_EndOfTheCycle::OnPostTemplatesCreated");
+	PatchPPChain();
+}
+
+static event PatchPPChain()
+{
+	local MaterialInterface TempMat;
+	local MaterialEffect TempEffect;
+	// Lets hope this stays cached in Engine...
+	local PostProcessChain DefaultPP;
+
+	DefaultPP = `XENGINE.GetDefaultPostProcessChain();
+	`assert(DefaultPP != none);
+
+	TempMat = MaterialInterface(`CONTENT.RequestGameArchetype("HexFOW.M_PP_HexFOW"));
+	TempEffect = new(DefaultPP) class'MaterialEffect';
+	TempEffect.Material = TempMat;
+	TempEffect.SceneDPG = SDPG_World;
+	TempEffect.EffectName = TempMat.Name;
+	TempEffect.bShowInGame = true;
+
+	DefaultPP.Effects.InsertItem(DefaultPP.Effects.Find(DefaultPP.FindPostProcessEffect('ShadowModeOn')), TempEffect);	
 }
 
 /// <summary>

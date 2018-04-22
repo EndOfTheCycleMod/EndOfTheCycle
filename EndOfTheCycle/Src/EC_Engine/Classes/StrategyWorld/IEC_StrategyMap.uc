@@ -39,6 +39,11 @@ function int GetTileInfo(int Pos);
 function int GetEdgeInfo(int Pos);
 // The shortest tile distance, disregarding any terrain types or features
 function int GetTileDistance(int A, int B);
+// Get all tiles that intersect with a line trace, including A and B
+//function array<int> TraceTiles(int A, int B);
+// Draw a straight line from A to B, defined as a list of tiles where
+// adjacency in the list is equivalent to adjacency on the map
+//function array<int> DrawLine(int A, int B);
 
 // Return an array of inclusive ranges representing valid tile handles
 // The Map interface doesn't require that this is a good representation,

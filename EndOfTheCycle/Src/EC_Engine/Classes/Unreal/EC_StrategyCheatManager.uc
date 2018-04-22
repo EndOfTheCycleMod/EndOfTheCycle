@@ -4,6 +4,12 @@ var int PathingSourceTile;
 var int LastGoal;
 var PathfindingResult Result;
 
+// Override, `PRES -> `PRESBASE
+exec function EnablePostProcessEffect(name EffectName, bool bEnable)
+{
+	`PRESBASE.EnablePostProcessEffect(EffectName, bEnable);
+}
+
 exec function StartPathing()
 {
 	PathingSourceTile = `ECMAP.GetCursorHighlightedTile();
