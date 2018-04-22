@@ -1,5 +1,5 @@
 // A Dynamic Tiled Map that can be used for simple prototyping and testing. Ugly, but functional.
-class EC_DynamicTiledMap extends Actor implements(IEC_StrategyMap);
+class EC_DynamicTiledMap extends Actor implements(IEC_StrategyMap, IEC_StratMapFOWVisualizer);
 
 
 const HEX_SIZE = 144.0f;         // 96 * 1.5
@@ -33,6 +33,9 @@ var array<StaticMeshComponent> TileMeshes;
 var transient vector MouseWorldOrigin, MouseWorldDirection;
 
 var transient int LastHoveredTile;
+
+var transient ScriptedTexture FOWTexture;
+var transient array<FOWUpdateParams> ImmediateQueue;
 
 // EC_Hex.M_Hex / EC_Hex.SM_Hex
 
@@ -249,6 +252,113 @@ function string GetPositionDebugInfo(int Pos)
 	P = GetTile2DCoords(Pos);
 	return "(X:" @ P.X $ ", Y:" @ P.Y $ ")";
 }
+
+function IEC_StratMapFOWVisualizer GetFOWVisualizer()
+{
+	return self;
+}
+
+function InitResources()
+{
+	local LocalPlayer LP;
+	local PostProcessChain PPChain;
+	local int ChainIdx, I;
+	local PostProcessEffect Effect, FoundEffect;
+	local MaterialInstanceConstant MIC;
+	local LinearColor C;
+
+	LP = LocalPlayer(GetALocalPlayerController().Player);
+	if (LP != none)
+	{
+		for(ChainIdx = 0; ChainIdx < LP.PlayerPostProcessChains.Length; ++ChainIdx)
+		{
+			PPChain = LP.PlayerPostProcessChains[ChainIdx];
+			Effect = PPChain.FindPostProcessEffect('M_PP_HexFOW');
+			if (Effect != none)
+			{
+				FoundEffect = Effect;
+				break;
+			}
+		}
+	}
+	`assert(FoundEffect != none);
+	MIC = MaterialInstanceConstant(MaterialEffect(FoundEffect).Material);
+	I = MIC.TextureParameterValues.Find('ParameterName', 'FOWTex');
+	if (I != INDEX_NONE)
+	{
+		FOWTexture = ScriptedTexture(MIC.TextureParameterValues[i].ParameterValue);
+		if (FOWTexture != none)
+			class'ScriptedTexture'.static.Resize(FOWTexture, Max(Width, Height), Max(Width, Height));
+	}
+
+	if (FOWTexture == none)
+	{
+		FOWTexture = ScriptedTexture(class'ScriptedTexture'.static.Create(Max(Width, Height), Max(Width, Height), PF_A8R8G8B8, MakeLinearColor(1, 1, 1, 1), false, true, false, self));
+		FOWTexture.Render = RenderFOW;
+		MIC.SetTextureParameterValue('FOWTex', FOWTexture);
+	}
+
+	C.R = Max(Width, Height);
+	C.G = Max(Width, Height);
+	MIC.SetVectorParameterValue('MapDimensions', C);
+	C.R = Max(Width, Height);
+	C.G = Max(Width, Height);
+	MIC.SetVectorParameterValue('TexSize', C);
+}
+
+function bool FOWInited()
+{
+	return FOWTexture != none;
+}
+
+simulated function RenderFOW(Canvas C)
+{
+	local int i;
+	local IntPoint P;
+	local Texture2D ColorTexture;
+	`log("Render!!");
+	// TODO
+	//FOWTexture.PreOptimizeDrawTiles(...);
+	for (i = 0; i < ImmediateQueue.Length; i++)
+	{
+		P = GetTile2DCoords(ImmediateQueue[i].Tile);
+		switch (ImmediateQueue[i].NewState)
+		{
+			case eECVS_Unexplored:
+			case eECVS_Explored:
+				ColorTexture = class'Console'.default.DefaultTexture_Black;
+			case eECVS_Vision:
+			case eECVS_Full:
+				ColorTexture = class'Console'.default.DefaultTexture_White;
+		}
+		C.SetPos(P.X, P.Y);
+		C.DrawTile(ColorTexture, 1, 1, 0, 0, 32, 32);
+	}
+}
+
+function UpdateFOW(array<FOWUpdateParams> Params, bool Immediate)
+{
+	local int i;
+	FOWTexture.bNeedsUpdate = true;
+
+	for (i = 0; i < Params.Length; i++)
+	{
+		ImmediateQueue.AddItem(Params[i]);
+	}
+}
+
+function ReleaseResources()
+{
+
+}
+
+
+
+
+
+
+
+
 
 // TODO: Inline these private functions so we can squeeze a bit of performance
 private final function IntPoint GetTile2DCoords(int TileHandle)

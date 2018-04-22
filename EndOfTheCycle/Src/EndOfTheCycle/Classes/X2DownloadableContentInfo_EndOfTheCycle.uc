@@ -20,6 +20,7 @@ static event PatchPPChain()
 {
 	local MaterialInterface TempMat;
 	local MaterialEffect TempEffect;
+	local MaterialInstanceConstant MIC;
 	// Lets hope this stays cached in Engine...
 	local PostProcessChain DefaultPP;
 
@@ -27,8 +28,10 @@ static event PatchPPChain()
 	`assert(DefaultPP != none);
 
 	TempMat = MaterialInterface(`CONTENT.RequestGameArchetype("HexFOW.M_PP_HexFOW"));
+	MIC = new (TempMat) class'MaterialInstanceConstant';
+	MIC.SetParent(TempMat);
 	TempEffect = new(DefaultPP) class'MaterialEffect';
-	TempEffect.Material = TempMat;
+	TempEffect.Material = MIC;
 	TempEffect.SceneDPG = SDPG_World;
 	TempEffect.EffectName = TempMat.Name;
 	TempEffect.bShowInGame = true;

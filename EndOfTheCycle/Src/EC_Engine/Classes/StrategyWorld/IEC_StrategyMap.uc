@@ -50,6 +50,8 @@ function int GetTileDistance(int A, int B);
 // but it's rather likely that tile handles will be *somewhat* continuous
 function array<IntPoint> GetValidPositionRanges();
 
+function IEC_StratMapFOWVisualizer GetFOWVisualizer();
+
 // Debug functionality
 static function CreateRandomMap(XComGameState NewGameState);
 function string GetPositionDebugInfo(int Pos);

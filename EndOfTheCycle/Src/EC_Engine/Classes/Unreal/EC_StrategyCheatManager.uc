@@ -1,4 +1,4 @@
-class EC_StrategyCheatManager extends XComCheatManager within EC_StrategyController;
+class EC_StrategyCheatManager extends XComCheatManager within EC_StrategyController dependson(IEC_StratMapFOWVisualizer);
 
 var int PathingSourceTile;
 var int LastGoal;
@@ -54,6 +54,24 @@ function DrawDebugLabel(Canvas kCanvas)
 		else
 		{
 
+		}
+	}
+}
+
+exec function SetFOWState(bool st)
+{
+	local IEC_StratMapFOWVisualizer FOWVis;
+	local array<FOWUpdateParams> Params;
+	local FOWUpdateParams P;
+	FOWVis = `ECMAP.GetFOWVisualizer();
+	if (FOWVis.FOWInited())
+	{
+		P.Tile = `ECMAP.GetCursorHighlightedTile();
+		if (P.Tile >= 0)
+		{
+			P.NewState = st ? eECVS_Full : eECVS_Unexplored;
+			Params.AddItem(P);
+			FOWVis.UpdateFOW(Params, true);
 		}
 	}
 }

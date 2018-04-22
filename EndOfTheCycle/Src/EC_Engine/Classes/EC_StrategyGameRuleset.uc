@@ -173,6 +173,7 @@ Begin:
 	XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).bProcessedTravelDestinationLoaded = true;
 	class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController().ClientSetCameraFade(false);
 	`ECCAMSTACK.AddCamera(`ECMAP.CreateDefaultCamera());
+	`ECMAP.GetFOWVisualizer().InitResources();
 
 	isReady = true;
 	PopState();

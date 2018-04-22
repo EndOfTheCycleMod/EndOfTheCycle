@@ -45,4 +45,5 @@ if (col < 0 || col >= MapDimensions.r || row < 0 || row >= MapDimensions.g)
 {
 	sclr = 0.0f;
 }
-return float3(col / TexSize.r, row / TexSize.g, 0.0f);
+// +0.5f so we actually hit the pixel "center", whatever a pixel center is
+return float3((float(col) + 0.5f) / TexSize.r, (float(row) + 0.5f) / TexSize.g, sclr);
