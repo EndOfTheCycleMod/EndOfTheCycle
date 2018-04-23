@@ -7,7 +7,8 @@
 
 // Inputs:
 // float2 MapDimensions -- the width and height of the Hex map in Hex Coords
-// float2 MapMin, MapMax -- the world space locations of the min and max hex
+// float2 Origin -- position of the center of the upmost left tile
+// float HexSize -- size of a hex
 // float2 WorldPosition -- world space position
 // float2 TexSize       -- pixel size of the texture
 
@@ -21,8 +22,7 @@ float2x2 invMatrix = {
 	0.0f,                0.6666666666f
 };
 
-float tileSize = (MapMax.r - MapMin.r) / MapDimensions.r;
-float2 unroundHex = mul(invMatrix, WorldPosition - float3(MapMin.r, MapMin.g, 0.0f)) / tileSize;
+float2 unroundHex = mul(invMatrix, WorldPosition - float3(Origin.r, Origin.g, 0.0f)) / HexSize;
 
 float3 unroundCube = float3(unroundHex.x, -unroundHex.x - unroundHex.y ,unroundHex.y);
 // Now round:

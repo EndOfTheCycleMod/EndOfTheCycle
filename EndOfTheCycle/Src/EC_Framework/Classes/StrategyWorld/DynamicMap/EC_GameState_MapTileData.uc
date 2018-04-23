@@ -85,10 +85,6 @@ function int RaiseTerrain(int ChunkSize, int LandBudget, EC_DynamicTiledMap Map)
 	local int i;
 	local int NewTile, Tile;
 	local int Ctr;
-	local int Enqueued, Dequeued;
-
-	Enqueued = 0;
-	Dequeued = 0;
 	GlobalStep++;
 
 	NewTile = Rand(Map.TileMeshes.Length);
@@ -96,7 +92,6 @@ function int RaiseTerrain(int ChunkSize, int LandBudget, EC_DynamicTiledMap Map)
 	TempTiles[NewTile].Priority = 0;
 	TempTiles[NewTile].MarkStep = GlobalStep;
 	Enqueue(NewTile, TileQueue);
-	Enqueued++;
 	Ctr = NewTile;
 
 	size = 0;
@@ -104,7 +99,6 @@ function int RaiseTerrain(int ChunkSize, int LandBudget, EC_DynamicTiledMap Map)
 	while (size < ChunkSize && TileQueue.Length > 0)
 	{
 		Tile = Dequeue(TileQueue);
-		Dequeued++;
 		if (TempTiles[Tile].Height == 0)
 		{
 			LandBudget--;
@@ -128,7 +122,6 @@ function int RaiseTerrain(int ChunkSize, int LandBudget, EC_DynamicTiledMap Map)
 					TempTiles[NewTile].Priority *= (1 + FRand());
 //				}
 				Enqueue(NewTile, TileQueue);
-				Enqueued++;
 			}
 		}
 	}

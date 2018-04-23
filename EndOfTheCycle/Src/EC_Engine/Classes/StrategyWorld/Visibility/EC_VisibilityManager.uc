@@ -1,4 +1,4 @@
-class EC_VisibilityManager extends Object;
+class EC_VisibilityManager extends Actor;
 
 enum EECVisState
 {

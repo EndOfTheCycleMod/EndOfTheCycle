@@ -1,13 +1,13 @@
 // Custom shape manager class that references our uncooked assets. The builtin one just doesn't work without debugging.
 class UncookedSimpleShapeManager extends SimpleShapeManager;
 
-var StaticMesh Sphere, Cube, Cylinder, Cone;
+var StaticMesh Sphere, Cube, Cyl, Cone;
 
 event PostBeginPlay()
 {
 	Sphere = StaticMesh(`CONTENT.RequestGameArchetype("SimpleShapes_Debug.ASE_UnitSphere"));
 	Cube = StaticMesh(`CONTENT.RequestGameArchetype("SimpleShapes_Debug.ASE_UnitCube"));
-	Cylinder = StaticMesh(`CONTENT.RequestGameArchetype("SimpleShapes_Debug.ASE_UnitCylinder"));
+	Cyl = StaticMesh(`CONTENT.RequestGameArchetype("SimpleShapes_Debug.ASE_UnitCylinder"));
 	Cone = StaticMesh(`CONTENT.RequestGameArchetype("SimpleShapes_Debug.ASE_UnitCone"));
 }
 
@@ -20,7 +20,7 @@ function ShapePair AddShape(StaticMesh StaticMesh, bool bPersistent)
 	else if (InStr(Trace, "Box") != INDEX_NONE)
 		StaticMesh = Cube;
 	else if (InStr(Trace, "Cylinder") != INDEX_NONE)
-		StaticMesh = Cylinder;
+		StaticMesh = Cyl;
 	else if (InStr(Trace, "Cone") != INDEX_NONE)
 		StaticMesh = Cone;
 	
