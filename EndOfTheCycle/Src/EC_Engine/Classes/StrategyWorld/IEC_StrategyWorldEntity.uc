@@ -20,4 +20,4 @@ function Actor Ent_GetVisualizer();
 function Actor Ent_FindOrCreateVisualizer();
 // force the visualizer to reflect the state passed via FromGameState,
 // or to the current state if FromGameState == none
-function Ent_SyncVsualizer(optional XComGameState FromGameState = none);
+function Ent_SyncVisualizer(optional XComGameState FromGameState = none);

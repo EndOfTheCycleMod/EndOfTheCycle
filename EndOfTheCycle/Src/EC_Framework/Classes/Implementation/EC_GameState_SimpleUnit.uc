@@ -84,9 +84,9 @@ function Actor Ent_GetVisualizer()
 
 function Actor Ent_FindOrCreateVisualizer()
 {
-	local Actor Vis;
+	local EC_SimpleUnitVisualizer Vis;
 
-	Vis = `XCOMHISTORY.GetVisualizer(self.ObjectID);
+	Vis = EC_SimpleUnitVisualizer(`XCOMHISTORY.GetVisualizer(self.ObjectID));
 	if (Vis != none)
 	{
 		return Vis;
@@ -98,7 +98,7 @@ function Actor Ent_FindOrCreateVisualizer()
 	return Vis;
 }
 
-function Ent_SyncVsualizer(optional XComGameState FromGameState = none)
+function Ent_SyncVisualizer(optional XComGameState FromGameState = none)
 {
 	local EC_GameState_SimpleUnit TargetUnitState;
 	local int HistIdx;
@@ -107,7 +107,7 @@ function Ent_SyncVsualizer(optional XComGameState FromGameState = none)
 	local rotator Rot;
 	local EC_SimpleUnitVisualizer Vis;
 
-	Vis = Ent_GetVisualizer();
+	Vis = EC_SimpleUnitVisualizer(Ent_GetVisualizer());
 	`assert(Vis != none);
 	HistIdx = -1;
 	if (FromGameState != none)
@@ -118,7 +118,7 @@ function Ent_SyncVsualizer(optional XComGameState FromGameState = none)
 			HistIdx = FromGameState.HistoryIndex;
 		}
 	}
-	TargetUnitState = EC_GameState_SimpleUnit(`XCOMHISTORY.GetGameStateForObjectID(self.ObjectID, , HistIndex));
+	TargetUnitState = EC_GameState_SimpleUnit(`XCOMHISTORY.GetGameStateForObjectID(self.ObjectID, , HistIdx));
 	`assert(TargetUnitState != none);
 	TileLocation = TargetUnitState.Ent_GetPosition();
 	if (TileLocation > INDEX_NONE)
@@ -145,7 +145,7 @@ function MoverData Path_GetMoverData()
 	local MoverData Data;
 
 	Data.Mobility = 3 * `MOVE_DENOMINATOR;
-	Data.MobilityPerTurn = Data.Mobility;
+	Data.CurrentMobility = Data.Mobility;
 	Data.Domain = eUD_Land;
 	Data.PathfinderClass = class'EC_DefaultUnitPathfinder';
 

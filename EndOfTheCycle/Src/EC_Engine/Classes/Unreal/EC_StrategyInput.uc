@@ -151,7 +151,7 @@ function bool LMouse(int ActionMask)
 
 	if ((ActionMask & class'UIUtilities_Input'.const.FXS_ACTION_RELEASE) != 0)
 	{
-		Tile = `ECMMAP.GetCursorHighlightedTile();
+		Tile = `ECMAP.GetCursorHighlightedTile();
 		if (Tile >= 0)
 		{
 			Outer.SelectTile(Tile);

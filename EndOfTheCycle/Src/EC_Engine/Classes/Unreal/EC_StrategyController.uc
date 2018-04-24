@@ -132,6 +132,8 @@ function SelectTile(int Tile)
 
 	History = `XCOMHISTORY;
 
+	// TODO: There's no way we can leave this code here. Move to a common manager class that provides faster access.
+	// We will need all these functions for Pathfinding and Visibility too!
 	foreach History.IterateByClassType(class'XComGameState_BaseObject', StateObject)
 	{
 		if (IEC_StrategyWorldEntity(StateObject) != none && IEC_StrategyWorldEntity(StateObject).Ent_GetPosition() == Tile)
@@ -176,6 +178,14 @@ function DrawDebugLabels(Canvas kCanvas)
 {
 	`ECRULES.DrawDebugLabel(kCanvas);
 	`ECCHEAT.DrawDebugLabel(kCanvas);
+	DrawDebugLabel(kCanvas);
+}
+
+function DrawDebugLabel(Canvas kCanvas)
+{
+	local int iX, iY;
+	iX=250;
+	iY=50;
 }
 
 defaultproperties
