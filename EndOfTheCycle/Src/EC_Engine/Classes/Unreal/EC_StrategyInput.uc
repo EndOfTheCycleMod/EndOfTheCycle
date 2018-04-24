@@ -139,3 +139,28 @@ function bool Start_Button( int ActionMask )
 	}
 	return false;
 }
+
+function bool LMouse(int ActionMask)
+{
+	local bool bHandled;
+	local int Tile;
+
+	bHandled = false; 
+
+	if(TestMouseConsumedByFlash()) return false;
+
+	if ((ActionMask & class'UIUtilities_Input'.const.FXS_ACTION_RELEASE) != 0)
+	{
+		Tile = `ECMMAP.GetCursorHighlightedTile();
+		if (Tile >= 0)
+		{
+			Outer.SelectTile(Tile);
+		}
+		else
+		{
+			Outer.Deselect();
+		}
+	}
+
+	return bHandled;
+}

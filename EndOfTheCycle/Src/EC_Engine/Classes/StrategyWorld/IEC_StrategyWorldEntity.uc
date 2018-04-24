@@ -7,6 +7,8 @@ function bool Ent_IsOnMap();
 function StateObjectReference Ent_GetOwningEntity();
 // get the current position this entity is occupying. Should be not-none if Ent_IsOnMap() == true
 function int Ent_GetPosition();
+// Forces the position to the given tile. Should only ever be used for initialization
+function Ent_ForceSetPosition(int Pos, XComGameState NewGameState);
 
 // get the owning player of this entity. may be none
 function StateObjectReference Ent_GetStrategyOwningPlayer();

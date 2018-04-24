@@ -1,5 +1,9 @@
 class EC_StrategyController extends XComPlayerController;
 
+var StateObjectReference SelectedEntity;
+
+// TODO: Evaluate Start
+
 var bool                                m_bAffectsHUD;
 var bool                                m_bInCinematicMode;
 
@@ -117,6 +121,51 @@ reliable client function ClientSetOnlineStatus()
 	`ONLINEEVENTMGR.SetOnlineStatus(OnlineStatus_InGameSP);
 }
 
+// TODO: Evaluate End
+
+function SelectTile(int Tile)
+{
+	local XComGameStateHistory History;
+	local XComGameState_BaseObject StateObject;
+	local array<StateObjectReference> EntitiesOnTile;
+	local int idx;
+
+	History = `XCOMHISTORY;
+
+	foreach History.IterateByClassType(class'XComGameState_BaseObject', StateObject)
+	{
+		if (IEC_StrategyWorldEntity(StateObject) != none && IEC_StrategyWorldEntity(StateObject).Ent_GetPosition() == Tile)
+		{
+			EntitiesOnTile.AddItem(StateObject.GetReference());
+		}
+	}
+	if (EntitiesOnTile.Length > 0)
+	{
+		idx = EntitiesOnTile.Find('ObjectID', SelectedEntity.ObjectID);
+		if (idx != INDEX_NONE)
+		{
+			idx = WrapIndex(idx + 1, 0, EntitiesOnTile.Length);
+		}
+		else
+		{
+			idx = 0;
+		}
+		SelectEntity(EntitiesOnTile[idx]);
+	}
+}
+
+protected function SelectEntity(StateObjectReference NewEntity)
+{
+	if (SelectedEntity.ObjectID > 0)
+	{
+		Deselect();
+	}
+}
+
+function Deselect()
+{
+
+}
 
 function DrawDebugData(HUD H)
 {
