@@ -18,3 +18,6 @@ function StateObjectReference Ent_GetStrategyControllingPlayer();
 // find the visualizer
 function Actor Ent_GetVisualizer();
 function Actor Ent_FindOrCreateVisualizer();
+// force the visualizer to reflect the state passed via FromGameState,
+// or to the current state if FromGameState == none
+function Ent_SyncVsualizer(optional XComGameState FromGameState = none);
