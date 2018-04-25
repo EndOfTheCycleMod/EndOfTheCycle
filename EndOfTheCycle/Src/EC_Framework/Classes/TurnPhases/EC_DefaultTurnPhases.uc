@@ -15,7 +15,16 @@ static function EC_StrategyTurnPhaseTemplate CreateMainTurnPhaseTemplate()
 
 	`CREATE_X2TEMPLATE(class'EC_StrategyTurnPhaseTemplate', Template, 'MainTurnPhase');
 	Template.TurnPhaseClass = class'EC_GameState_StrategyTurnPhaseEnhanced';
+	Template.PostCreateInstanceFromTemplateDelegate = AddSubsystems;
 	Template.NeedsPlayerEndPhase = true;
 
 	return Template;
+}
+
+static function AddSubsystems(EC_GameState_StrategyTurnPhase Phase, XComGameState NewGameState)
+{
+	local EC_GameState_StrategyTurnPhaseSubsystem SubsystemState;
+
+	SubsystemState = EC_GameState_StrategyTurnPhaseSubsystem(NewGameState.CreateNewStateObject(class'EC_GameState_UnitActionsSubsystem'));
+	EC_GameState_StrategyTurnPhaseEnhanced(Phase).AddSubsystem(NewGameState, SubsystemState);
 }

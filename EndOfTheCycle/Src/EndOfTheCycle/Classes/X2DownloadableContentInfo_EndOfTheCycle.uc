@@ -94,7 +94,7 @@ exec function DropTestSoldier()
 
 		NewUnit = EC_GameState_SimpleUnit(NewGameState.CreateNewStateObject(class'EC_GameState_SimpleUnit'));
 		NewUnit.Ent_ForceSetPosition(Tile, NewGameState);
-
+		NewUnit.Act_SetupActionsForBeginTurn(NewGameState, `ECRULES.CurrentPlayer);
 		`GAMERULES.SubmitGameState(NewGameState);
 	}
 }

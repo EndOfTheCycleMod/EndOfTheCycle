@@ -1,4 +1,5 @@
 // An enhanced turn phase with subsystems, capabilities to wait for user confirms, as well as subsystems
+// TODO: Can we move this to EC_Framework?
 class EC_GameState_StrategyTurnPhaseEnhanced extends EC_GameState_StrategyTurnPhase;
 
 var ECTurnPhaseStep Step;
@@ -7,7 +8,7 @@ var ECTurnPhaseStep Step;
 // gives the player's units action points and prevents ending the turn until all units have received their instructions
 // there might also be a Battle subsystem that blocks certain operations while a battle is pending -- it's far more restrictive
 // EC_GameState_TurnPhaseSubsystem
-var array<StateObjectReference> TurnPhaseSubsystems;
+var protected array<StateObjectReference> TurnPhaseSubsystems;
 
 const UserRequestContinueEventName = 'EC_ConfirmContinue';
 
@@ -23,8 +24,50 @@ function OnCreation(optional X2DataTemplate Template)
 
 function BeginTurnPhase(XComGameState NewGameState)
 {
+	local int i;
+	local XComGameStateHistory History;
+	local EC_GameState_StrategyTurnPhaseEnhanced LocalPhase;
+	local EC_GameState_StrategyTurnPhaseSubsystem Subsystem;
+
 	super.BeginTurnPhase(NewGameState);
 	Step = eECTPS_Step;
+
+	History = `XCOMHISTORY;
+
+	for (i = 0; i < TurnPhaseSubsystems.Length; i++)
+	{
+		Subsystem = EC_GameState_StrategyTurnPhaseSubsystem(History.GetGameStateForObjectID(TurnPhaseSubsystems[i].ObjectID));
+		// TODO: Subsystem member function, passing a NewGameState, but no ModifyStateObject before??
+		Subsystem.OnBeginTurnPhase(self.GetReference(), NewGameState);
+	}
+}
+
+function EndTurnPhase(XComGameState NewGameState)
+{
+	local int i;
+	local XComGameStateHistory History;
+	local EC_GameState_StrategyTurnPhaseEnhanced LocalPhase;
+	local EC_GameState_StrategyTurnPhaseSubsystem Subsystem;
+
+	super.EndTurnPhase(NewGameState);
+
+	History = `XCOMHISTORY;
+
+	for (i = 0; i < TurnPhaseSubsystems.Length; i++)
+	{
+		Subsystem = EC_GameState_StrategyTurnPhaseSubsystem(History.GetGameStateForObjectID(TurnPhaseSubsystems[i].ObjectID));
+		// TODO: Subsystem member function, passing a NewGameState, but no ModifyStateObject before??
+		Subsystem.OnEndTurnPhase(self.GetReference(), NewGameState);
+	}
+}
+
+function AddSubsystem(XComGameState NewGameState, EC_GameState_StrategyTurnPhaseSubsystem Subsystem)
+{
+	if (TurnPhaseSubsystems.Find('ObjectID', Subsystem.ObjectID) == INDEX_NONE && Subsystem.OwnerPhase.ObjectID <= 0)
+	{
+		Subsystem.OwnerPhase = self.GetReference();
+		TurnPhaseSubsystems.AddItem(Subsystem.GetReference());
+	}
 }
 
 
@@ -52,7 +95,6 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 	
 	// TODO: Split game state code and action code.
 	GetMyTemplate().ProcessTurnPhase(self.GetReference(), Result.PotentialActions, Step);
-
 	for (i = 0; i < TurnPhaseSubsystems.Length; i++)
 	{
 		Subsystem = EC_GameState_StrategyTurnPhaseSubsystem(History.GetGameStateForObjectID(TurnPhaseSubsystems[i].ObjectID));

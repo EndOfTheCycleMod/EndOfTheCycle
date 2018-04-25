@@ -1,8 +1,9 @@
-class EC_GameState_SimpleUnit extends XComGameState_BaseObject implements(IEC_Unit, IEC_StrategyWorldEntity, IEC_Pathable);
+class EC_GameState_SimpleUnit extends XComGameState_BaseObject implements(IEC_Unit, IEC_StrategyWorldEntity, IEC_Pathable, IEC_ActionInterface);
 
 var int CurrentPosition;
 var int Mobility;
 
+var array<PathfindingNode> Path;
 // IEC_Unit Interface
 
 function name Un_GetUnitTemplateName()
@@ -144,7 +145,7 @@ function MoverData Path_GetMoverData()
 {
 	local MoverData Data;
 
-	Data.Mobility = 3 * `MOVE_DENOMINATOR;
+	Data.Mobility = Mobility;
 	Data.CurrentMobility = Data.Mobility;
 	Data.Domain = eUD_Land;
 	Data.PathfinderClass = class'EC_DefaultUnitPathfinder';
@@ -154,12 +155,79 @@ function MoverData Path_GetMoverData()
 
 function Path_QueuePath(array<PathfindingNode> PathNodes)
 {
+	local XComGameState NewGameState;
+	local EC_GameState_SimpleUnit Unit;
+	NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Queue Path!");
 
+	Unit = EC_GameState_SimpleUnit(NewGameState.ModifyStateObject(default.Class, self.ObjectID));
+	Unit.Path = PathNodes;
+	// Contains our pathing origin
+	Unit.Path.Remove(0, 1);
+	`GAMERULES.SubmitGameState(NewGameState);
+	// Immediately perform our actions, since the player just performed some kind of path
+	Unit.Act_PerformQueuedActions();
 }
 
 function IEC_StrategyWorldEntity Path_GetStrategyWorldEntity()
 {
 	return self;
+}
+
+function bool Act_HasAvailableActions(out array<ECPotentialTurnPhaseAction> Actions)
+{
+	local ECPotentialTurnPhaseAction A;
+
+	if (Mobility > 0)
+	{
+		A.Type = eECPTPAT_Optional;
+		A.Source = self.GetReference();
+		A.Player = `ECRULES.CurrentPlayer;
+		A.DisplayName = "Move Unit";
+		A.bExtended = false;
+		
+		A.EventName = 'SimpleLookAtTargetEvent';
+
+		A.DebugString = "Unit has moves available";
+
+		Actions.AddItem(A);
+		return true;
+	}
+	return false;
+}
+
+function bool Act_HasQueuedActions()
+{
+	return Path.Length > 0;
+}
+
+function Act_PerformQueuedActions()
+{
+	// Pop the next moves
+	local array<int> Moves;
+	local EC_GameStateContext_SimplePath PathContext;
+
+	`log(`showvar(Mobility) @ `showvar(Path.Length));
+
+	while (Moves.Length < Mobility && Path.Length > 0)
+	{
+		Moves.AddItem(Path[0].Tile);
+		Path.Remove(0,1);
+	}
+	if (Moves.Length > 0)
+	{
+		PathContext = EC_GameStateContext_SimplePath(class'EC_GameStateContext_SimplePath'.static.CreateXComGameStateContext());
+		PathContext.Unit = self.GetReference();
+		PathContext.MoveTiles = Moves;
+
+		`GAMERULES.SubmitGameStateContext(PathContext);
+	}
+}
+
+// Gain action points for beginning the current turn
+function Act_SetupActionsForBeginTurn(XComGameState NewGameState, StateObjectReference Player)
+{
+	`log("Gain Action Points");
+	Mobility = 3;
 }
 
 defaultproperties

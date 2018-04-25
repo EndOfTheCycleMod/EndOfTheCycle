@@ -17,6 +17,11 @@ var ECStrategyGameRuleStateChange GameRuleType;
 
 // Result Context Start
 
+function bool Validate(optional EInterruptionStatus InInterruptionStatus)
+{
+	return true;
+}
+
 
 function XComGameState ContextBuildGameState()
 {

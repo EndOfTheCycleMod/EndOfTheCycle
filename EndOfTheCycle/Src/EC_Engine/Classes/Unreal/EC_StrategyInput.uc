@@ -18,7 +18,6 @@ simulated function bool PreProcessCheckGameLogic( int cmd, int ActionMask )
 
 simulated function bool PostProcessCheckGameLogic( float DeltaTime )
 {
-	super.PostProcessCheckGameLogic(DeltaTime);
 
 //	Controller_CheckForWindowScroll();
 	Mouse_CheckForWindowScroll(DeltaTime);
@@ -134,6 +133,7 @@ function bool Start_Button( int ActionMask )
 {
 	if (( ActionMask & class'UIUtilities_Input'.const.FXS_ACTION_RELEASE) != 0)
 	{
+		ScriptTrace();
 		`ECPRES.UIPauseMenu(, !`ECRULES.IsSavingAllowed());
 		return true;
 	}
@@ -147,20 +147,33 @@ function bool LMouse(int ActionMask)
 
 	bHandled = false; 
 
-	if(TestMouseConsumedByFlash()) return false;
+	if(TestMouseConsumedByFlash())
+		return false;
 
 	if ((ActionMask & class'UIUtilities_Input'.const.FXS_ACTION_RELEASE) != 0)
 	{
 		Tile = `ECMAP.GetCursorHighlightedTile();
-		if (Tile >= 0)
-		{
-			Outer.SelectTile(Tile);
-		}
-		else
-		{
-			Outer.Deselect();
-		}
+		Outer.SelectTile(Tile);
+		bHandled = true;
 	}
 
 	return bHandled;
 }
+
+function bool RMouse(int ActionMask)
+{
+	local bool bHandled;
+
+	bHandled = false; 
+
+	if(TestMouseConsumedByFlash())
+		return false;
+
+	if ((ActionMask & class'UIUtilities_Input'.const.FXS_ACTION_RELEASE) != 0)
+	{
+		bHandled = Outer.ConfirmPath();
+	}
+
+	return bHandled;
+}
+

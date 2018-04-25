@@ -14,4 +14,4 @@ function bool Act_HasQueuedActions();
 function Act_PerformQueuedActions();
 
 // Gain action points for beginning the current turn
-function Act_SetupActionsForBeginTurn(XComGameState NewGameState);
+function Act_SetupActionsForBeginTurn(XComGameState NewGameState, StateObjectReference Player);

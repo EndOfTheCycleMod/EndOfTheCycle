@@ -49,9 +49,6 @@ function EndTurnPhase(XComGameState NewGameState)
 function ECTurnPhaseProcessResult ProcessTurnPhase()
 {
 	local ECTurnPhaseProcessResult Result, EmptyResult;
-	local XComGameStateHistory History;
-
-	History = `XCOMHISTORY;
 	
 	GetMyTemplate().ProcessTurnPhase(self.GetReference(), Result.PotentialActions, eECTPS_None);
 
