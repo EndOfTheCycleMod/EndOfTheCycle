@@ -4,13 +4,13 @@ var class<EC_GameState_StrategyTurnPhase> TurnPhaseClass;
 
 var bool NeedsPlayerEndPhase;
 
-delegate ProcessTurnPhaseDelegate(StateObjectReference PhaseRef, out array<ECPotentialTurnPhaseAction> PotentialActions, ECTurnPhaseStep Step, XComGameState NewGameState);
+delegate ProcessTurnPhaseDelegate(StateObjectReference PhaseRef, out array<ECPotentialTurnPhaseAction> PotentialActions, ECTurnPhaseStep Step);
 
-function ProcessTurnPhase(StateObjectReference PhaseRef, out array<ECPotentialTurnPhaseAction> PotentialActions, ECTurnPhaseStep Step, XComGameState NewGameState)
+function ProcessTurnPhase(StateObjectReference PhaseRef, out array<ECPotentialTurnPhaseAction> PotentialActions, ECTurnPhaseStep Step)
 {
 	if (ProcessTurnPhaseDelegate != none)
 	{
-		ProcessTurnPhaseDelegate(PhaseRef, PotentialActions, Step, NewGameState);
+		ProcessTurnPhaseDelegate(PhaseRef, PotentialActions, Step);
 	}
 }
 

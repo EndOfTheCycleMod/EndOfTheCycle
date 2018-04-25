@@ -50,22 +50,10 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 {
 	local ECTurnPhaseProcessResult Result, EmptyResult;
 	local XComGameStateHistory History;
-	local XComGameState NewGameState;
 
 	History = `XCOMHISTORY;
-
-	NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Process Turn Phase" @ m_TemplateName);
 	
-	GetMyTemplate().ProcessTurnPhase(self.GetReference(), Result.PotentialActions, eECTPS_None, NewGameState);
-
-	if (NewGameState.GetNumGameStateObjects() > 0)
-	{
-		`GAMERULES.SubmitGameState(NewGameState);
-	}
-	else
-	{
-		History.CleanupPendingGameState(NewGameState);
-	}
+	GetMyTemplate().ProcessTurnPhase(self.GetReference(), Result.PotentialActions, eECTPS_None);
 
 	Result = EmptyResult;
 	Result.Type = eECTPPRT_End;

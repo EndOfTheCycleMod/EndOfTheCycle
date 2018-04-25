@@ -4,7 +4,7 @@ class EC_GameState_StrategyTurnPhaseSubsystem extends XComGameState_BaseObject;
 
 // Do things, fill out actions. Actions filled out need to be independent of Step, only game state code may depend on that.
 // However, actions may depend on game state code
-function PostProcessTurnPhase(StateObjectReference PhaseRef, out array<ECPotentialTurnPhaseAction> PotentialActions, ECTurnPhaseStep Step, XComGameState NewGameState)
+function PostProcessTurnPhase(StateObjectReference PhaseRef, out array<ECPotentialTurnPhaseAction> PotentialActions, ECTurnPhaseStep Step)
 {
 
 }

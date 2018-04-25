@@ -49,17 +49,17 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 	local XComGameState NewGameState;
 
 	History = `XCOMHISTORY;
-
-	NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Process Turn Phase" @ m_TemplateName @ "@ step" @ GetEnum(Enum'ECTurnPhaseStep', Step));
 	
-	GetMyTemplate().ProcessTurnPhase(self.GetReference(), Result.PotentialActions, Step, NewGameState);
+	// TODO: Split game state code and action code.
+	GetMyTemplate().ProcessTurnPhase(self.GetReference(), Result.PotentialActions, Step);
 
 	for (i = 0; i < TurnPhaseSubsystems.Length; i++)
 	{
 		Subsystem = EC_GameState_StrategyTurnPhaseSubsystem(History.GetGameStateForObjectID(TurnPhaseSubsystems[i].ObjectID));
-		Subsystem.PostProcessTurnPhase(self.GetReference(), Result.PotentialActions, Step, NewGameState);
+		Subsystem.PostProcessTurnPhase(self.GetReference(), Result.PotentialActions, Step);
 	}
 
+	NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Process Turn Phase" @ m_TemplateName @ "@ step" @ GetEnum(Enum'ECTurnPhaseStep', Step));
 	if (Step == eECTPS_Finalize && Result.PotentialActions.Length > 0)
 	{
 		// move back to step if we still have actions

@@ -152,8 +152,10 @@ function MoverData Path_GetMoverData()
 	return Data;
 }
 
-function Path_QueuePath(array<int> Path);
-function Path_PerformQueuedPath();
+function Path_QueuePath(array<PathfindingNode> PathNodes)
+{
+
+}
 
 function IEC_StrategyWorldEntity Path_GetStrategyWorldEntity()
 {
