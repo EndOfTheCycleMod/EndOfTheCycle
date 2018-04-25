@@ -13,6 +13,35 @@ function SetGameVolume(Box B)
 }
 
 // X2Camera Interface
+
+function Added()
+{
+	local Object ThisObj;
+
+	ThisObj = self;
+	`XEVENTMGR.RegisterForEvent(ThisObj, 'SimpleLookAtTargetEvent', OnLookAt);
+}
+
+function Removed()
+{
+	local Object ThisObj;
+
+	ThisObj = self;
+	`XEVENTMGR.UnRegisterFromAllEvents(ThisObj);
+}
+
+function EventListenerReturn OnLookAt(Object EventData, Object EventSource, XComGameState GameState, Name Event, Object CallbackData)
+{
+	local Actor A;
+	
+	A = `XCOMHISTORY.GetVisualizer(XComGameState_BaseObject(EventSource).ObjectID);
+	if (A != none)
+	{
+		TargetLookAt = A.Location;
+	}
+	return ELR_NoInterrupt;
+}
+
 function TPOV GetCameraLocationAndOrientation()
 {
 	local TPOV POV;
@@ -104,4 +133,9 @@ protected function float ComputeLocationBrakeAlpha(float DistanceFromDestination
 	BrakeAlpha = FClamp(BrakeAlpha, 0.01f, 1.0f);
 	
 	return BrakeAlpha;
+}
+
+defaultproperties
+{
+	CameraTag="DefaultLookAtCam"
 }

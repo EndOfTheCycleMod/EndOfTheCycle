@@ -24,7 +24,7 @@ struct PathfindingNode
 // Stores properties of a given movable object about its mobility
 struct MoverData
 {
-	//var int ObjectID; // Do we need this or do we introduce unneccessary dependencies?
+	var int ObjectID; // Do we need this or do we introduce unneccessary dependencies? Keeping for comparison now
 	var int PlayerObjectID; // 
 	var int Mobility; // Mobility per turn
 	var int CurrentMobility; // Leftover mobility for this turn
@@ -46,6 +46,12 @@ struct PathfindingResult
 	var bool PathFound;
 	// Array containing the path
 	var array<PathfindingNode> Nodes;
+
+	structdefaultproperties
+	{
+		StartPosition=-2
+		GoalPosition=-2
+	}
 };
 
 
@@ -149,7 +155,7 @@ function PathfindingResult BuildPath(int Start, int End, MoverData MoveData)
 		{
 			Node = ClosedSet[Next];
 			Next = Node.VisitedViaIndex;
-			Result.Nodes.AddItem(Node);
+			Result.Nodes.InsertItem(0, Node);
 		}
 	}
 	return Result;

@@ -119,6 +119,8 @@ function EventListenerReturn OnTurnDataChanged(Object EventData, Object EventSou
 	return ELR_NoInterrupt;
 }
 
+// TODO: The map has important information that we may need to set up a proper start state
+// Can we communicate this with InitGame, or do we better split that state?
 state StartStrategyGame
 {
 Begin:
@@ -164,7 +166,12 @@ Begin:
 	{
 		Sleep(0.0f);
 	}
+	`XCOMVISUALIZATIONMGR.EnableBuildVisualization();
+	`XCOMVISUALIZATIONMGR.OnJumpForwardInHistory();
+	`XCOMVISUALIZATIONMGR.CheckStartBuildTree();
+
 	CreateDefaultPathfinder();
+	SyncVisualizers();
 	Sleep(1.0f);
 
 	`PRESBASE.UIStopMovie();
@@ -180,6 +187,29 @@ Begin:
 
 }
 
+static function SyncVisualizers()
+{
+	local XComGameStateHistory History;
+	local XComGameState_BaseObject Entity;
+
+	History = `XCOMHISTORY;
+	
+	foreach History.IterateByClassType(class'XComGameState_BaseObject', Entity)
+	{
+		if (IEC_StrategyWorldEntity(Entity) != none)
+		{
+			IEC_StrategyWorldEntity(Entity).Ent_FindOrCreateVisualizer();
+		}
+	}
+
+	foreach History.IterateByClassType(class'XComGameState_BaseObject', Entity)
+	{
+		if (IEC_StrategyWorldEntity(Entity) != none)
+		{
+			IEC_StrategyWorldEntity(Entity).Ent_SyncVisualizer();
+		}
+	}
+}
 
 
 // Whenever we end up waiting for new states, the current turn phase has a list of pseudo-actions that still need to be done

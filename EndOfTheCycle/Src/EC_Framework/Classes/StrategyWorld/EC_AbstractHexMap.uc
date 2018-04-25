@@ -194,17 +194,25 @@ function InitResources()
 	}
 	`assert(FoundEffect != none);
 	MIC = MaterialInstanceConstant(MaterialEffect(FoundEffect).Material);
+
+	/* For some reason, doing is this way results in a `Failed to find function None in ScriptedTexture` (WUT?)
+	 * Hence, we just let it get garbage collected
 	I = MIC.TextureParameterValues.Find('ParameterName', 'FOWTex');
 	if (I != INDEX_NONE)
 	{
 		FOWTexture = ScriptedTexture(MIC.TextureParameterValues[i].ParameterValue);
 		if (FOWTexture != none)
+		{
+			`log("Calling Resize");
 			class'ScriptedTexture'.static.Resize(FOWTexture, Max(Width, Height), Max(Width, Height));
-	}
+			`log("Called Resize");
+		}
+	}*/
+
 
 	if (FOWTexture == none)
 	{
-		FOWTexture = ScriptedTexture(class'ScriptedTexture'.static.Create(Max(Width, Height), Max(Width, Height), PF_A8R8G8B8, MakeLinearColor(1, 1, 1, 1), false, true, false, self));
+		FOWTexture = ScriptedTexture(class'ScriptedTexture'.static.Create(Max(Width, Height), Max(Width, Height), PF_A8R8G8B8, MakeLinearColor(1, 1, 1, 1), false, true, false, /*MIC -- see comment above*/none));
 		FOWTexture.Render = RenderFOW;
 		MIC.SetTextureParameterValue('FOWTex', FOWTexture);
 	}
@@ -219,6 +227,8 @@ function InitResources()
 	C.G = 0;
 	MIC.SetVectorParameterValue('Origin', C);
 	MIC.SetScalarParameterValue('HexSize', HEX_SIZE);
+
+	SubscribeToOnCleanupWorld();
 }
 
 function bool FOWInited()
@@ -264,9 +274,16 @@ function UpdateFOW(array<FOWUpdateParams> Params, bool Immediate)
 	}
 }
 
+simulated event OnCleanupWorld()
+{
+	ReleaseResources();
+}
+
 function ReleaseResources()
 {
-
+	`log("Cleaning up resources");
+	FOWTexture.Render = none;
+	FOWTexture = none;
 }
 
 `define assrt(a,b) InAssertEquals(`{a}, `{b}, "`{a}", string(`{b}));

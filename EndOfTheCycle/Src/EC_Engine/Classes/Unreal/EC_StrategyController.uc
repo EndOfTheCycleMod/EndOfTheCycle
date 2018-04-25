@@ -1,5 +1,14 @@
 class EC_StrategyController extends XComPlayerController;
 
+var StateObjectReference SelectedEntity;
+
+var bool ShowSelectionRing;
+var vector SelectionRingLocation;
+
+var PathfindingResult PathResult;
+
+// TODO: Evaluate Start
+
 var bool                                m_bAffectsHUD;
 var bool                                m_bInCinematicMode;
 
@@ -117,6 +126,111 @@ reliable client function ClientSetOnlineStatus()
 	`ONLINEEVENTMGR.SetOnlineStatus(OnlineStatus_InGameSP);
 }
 
+// TODO: Evaluate End
+
+function SelectTile(int Tile)
+{
+	local XComGameStateHistory History;
+	local XComGameState_BaseObject StateObject;
+	local array<StateObjectReference> EntitiesOnTile;
+	local int idx;
+
+	History = `XCOMHISTORY;
+	`log("Select" @ Tile);
+
+	// TODO: There's no way we can leave this code here. Move to a common manager class that provides faster access.
+	// We will need all these functions for Pathfinding and Visibility too!
+	foreach History.IterateByClassType(class'XComGameState_BaseObject', StateObject)
+	{
+		if (IEC_StrategyWorldEntity(StateObject) != none)
+		{
+			if (IEC_StrategyWorldEntity(StateObject).Ent_IsOnMap() && IEC_StrategyWorldEntity(StateObject).Ent_GetPosition() == Tile)
+			{
+				EntitiesOnTile.AddItem(StateObject.GetReference());
+			}
+		}
+	}
+	if (EntitiesOnTile.Length > 0)
+	{
+		idx = EntitiesOnTile.Find('ObjectID', SelectedEntity.ObjectID);
+		if (idx != INDEX_NONE)
+		{
+			idx = WrapIndex(idx + 1, 0, EntitiesOnTile.Length);
+		}
+		else
+		{
+			idx = 0;
+		}
+		SelectEntity(EntitiesOnTile[idx]);
+	}
+	else
+	{
+		Deselect();
+	}
+}
+
+protected function SelectEntity(StateObjectReference NewEntity)
+{
+	local Actor Vis;
+	if (SelectedEntity.ObjectID > 0)
+	{
+		Deselect();
+	}
+	SelectedEntity = NewEntity;
+	ShowSelectionRing = true;
+	Vis = `XCOMHISTORY.GetVisualizer(NewEntity.ObjectID);
+	SelectionRingLocation = Vis.Location;
+}
+
+function Deselect()
+{
+	ShowSelectionRing = false;
+	SelectedEntity = default.SelectedEntity;
+	PathResult = default.PathResult;
+}
+
+function bool ConfirmPath()
+{
+	if (PathResult.PathFound)
+	{
+		GetCurrentPathable().Path_QueuePath(PathResult.Nodes);
+		return true;
+	}
+	return false;
+}
+
+event PlayerTick( float DeltaTime )
+{
+	local int End;
+	local MoverData Data;
+	local IEC_Pathable Pathable;
+	
+	Pathable = GetCurrentPathable();
+	if (Pathable != none)
+	{
+		End = `ECMAP.GetCursorHighlightedTile();
+		Data = Pathable.Path_GetMoverData();
+		if (PathResult.Data != Data
+		|| PathResult.GoalPosition != End 
+		|| PathResult.StartPosition != Pathable.Path_GetStrategyWorldEntity().Ent_GetPosition())
+		{
+			PathResult = `ECGAME.DefaultPathfinder.BuildPath(Pathable.Path_GetStrategyWorldEntity().Ent_GetPosition(), End, Data);
+		}
+	}
+}
+
+protected function IEC_Pathable GetCurrentPathable()
+{
+	local IEC_Pathable Pathable;
+	local XComGameState_BaseObject Obj;
+
+	if (SelectedEntity.ObjectID > 0)
+	{
+		Obj = `XCOMHISTORY.GetGameStateForObjectID(SelectedEntity.ObjectID);
+		Pathable = IEC_Pathable(Obj);
+	}
+	return Pathable;
+}
 
 function DrawDebugData(HUD H)
 {
@@ -127,6 +241,38 @@ function DrawDebugLabels(Canvas kCanvas)
 {
 	`ECRULES.DrawDebugLabel(kCanvas);
 	`ECCHEAT.DrawDebugLabel(kCanvas);
+	DrawDebugLabel(kCanvas);
+}
+
+function DrawDebugLabel(Canvas kCanvas)
+{
+	local vector loc, Pos, pos2D;
+	local rotator Rot;
+	local int i;
+
+	if (ShowSelectionRing)
+	{
+		loc = SelectionRingLocation;
+		loc.X += cos(WorldInfo.TimeSeconds * 4) * 60;
+		loc.Y += sin(WorldInfo.TimeSeconds * 4) * 60;
+		`ECSHAPES.DrawSphere(loc, vect(20,20,20), MakeLinearColor(1,0.7,0.2,1), false);
+	}
+
+	if (SelectedEntity.ObjectID > 0)
+	{
+		if (PathResult.PathFound)
+		{
+			for (i = 0; i < PathResult.Nodes.Length - 1; i++)
+			{
+				`ECMAP.GetWorldPositionAndRotation(PathResult.Nodes[i].Tile, Pos, Rot);
+				`ECSHAPES.DrawSphere(Pos, vect(30,30,30), MakeLinearColor(0,1,0,1), false);
+				pos2D = kCanvas.Project(Pos);
+				kCanvas.SetPos(pos2D.X, pos2D.Y);
+				kCanvas.SetDrawColor(255,0,0);
+				kCanvas.DrawText(PathResult.Nodes[i].Distance);
+			}
+		}
+	}
 }
 
 defaultproperties

@@ -78,3 +78,37 @@ exec function TestHexMapDistances()
 		Map.RunTests();
 	}
 }
+
+exec function DropTestSoldier()
+{
+	local XComGameState NewGameState;
+	local EC_GameState_SimpleUnit NewUnit;
+	local int Tile;
+
+	Tile = `ECMAP.GetCursorHighlightedTile();
+
+	if (Tile > INDEX_NONE)
+	{
+		NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Dropping test \"soldier\"");
+		XComGameStateContext_ChangeContainer(NewGameState.GetContext()).BuildVisualizationFn = VisualizeTestSoldier;
+
+		NewUnit = EC_GameState_SimpleUnit(NewGameState.CreateNewStateObject(class'EC_GameState_SimpleUnit'));
+		NewUnit.Ent_ForceSetPosition(Tile, NewGameState);
+		NewUnit.Act_SetupActionsForBeginTurn(NewGameState, `ECRULES.CurrentPlayer);
+		`GAMERULES.SubmitGameState(NewGameState);
+	}
+}
+
+static function VisualizeTestSoldier(XComGameState VisualizeGameState)
+{
+	// TODO: ACTIONS!! For now we just sync directly because cheats and tests
+	local EC_GameState_SimpleUnit Unit;
+	`log("Visualization is working!");
+	foreach VisualizeGameState.IterateByClassType(class'EC_GameState_SimpleUnit', Unit)
+	{
+		break;
+	}
+	`assert(Unit != none);
+	Unit.Ent_FindOrCreateVisualizer();
+	Unit.Ent_SyncVisualizer(VisualizeGameState);
+}
