@@ -12,5 +12,3 @@ function MoverData Path_GetMoverData();
 // This path may not be valid! You may not have enough action points,
 // or the path may lead through mountains that were in Fog of War
 function Path_QueuePath(array<PathfindingNode> PathNodes);
-
-function IEC_StrategyWorldEntity Path_GetStrategyWorldEntity();

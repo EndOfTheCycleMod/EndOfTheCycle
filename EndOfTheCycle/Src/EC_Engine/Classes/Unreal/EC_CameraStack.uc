@@ -44,9 +44,6 @@ function bool ShouldUnitUse3rdPersonStyleOutline(XGUnitNativeBase Unit)
 	return false;
 }
 
-/// <summary>
-/// Returns true if buildings should cut down
-/// </summary>
 function bool AllowBuildingCutdown()
 {
 	`REDSCREEN(GetFuncName() @ "not supported by strategy camera stack.");

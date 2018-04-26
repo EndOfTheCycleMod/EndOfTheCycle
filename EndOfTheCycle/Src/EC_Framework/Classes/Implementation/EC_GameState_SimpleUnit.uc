@@ -168,11 +168,6 @@ function Path_QueuePath(array<PathfindingNode> PathNodes)
 	Unit.Act_PerformQueuedActions();
 }
 
-function IEC_StrategyWorldEntity Path_GetStrategyWorldEntity()
-{
-	return self;
-}
-
 function bool Act_HasAvailableActions(out array<ECPotentialTurnPhaseAction> Actions)
 {
 	local ECPotentialTurnPhaseAction A;
@@ -185,7 +180,7 @@ function bool Act_HasAvailableActions(out array<ECPotentialTurnPhaseAction> Acti
 		A.DisplayName = "Move Unit";
 		A.bExtended = false;
 		
-		A.EventName = 'SimpleLookAtTargetEvent';
+		A.EventName = 'SelectAndLookAt';
 
 		A.DebugString = "Unit has moves available";
 

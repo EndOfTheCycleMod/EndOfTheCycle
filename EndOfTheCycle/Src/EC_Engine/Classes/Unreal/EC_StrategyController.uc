@@ -2,9 +2,11 @@ class EC_StrategyController extends XComPlayerController;
 
 var StateObjectReference SelectedEntity;
 
+// TODO: Move
 var bool ShowSelectionRing;
 var vector SelectionRingLocation;
 
+// TODO: Create a Pathing Pawn
 var PathfindingResult PathResult;
 
 // TODO: Evaluate Start
@@ -169,14 +171,50 @@ function SelectTile(int Tile)
 	}
 }
 
-protected function SelectEntity(StateObjectReference NewEntity)
+event PostBeginPlay()
+{
+	local Object ThisObj;
+	super.PostBeginPlay();
+
+	ThisObj = self;
+	`XEVENTMGR.RegisterForEvent(ThisObj, 'SelectAndLookAt', OnSelectAndLookAt);
+}
+
+simulated event Cleanup()
+{
+	local Object ThisObj;
+	super.Cleanup();
+
+	ThisObj = self;
+	`XEVENTMGR.UnRegisterFromAllEvents(ThisObj);
+}
+
+function EventListenerReturn OnSelectAndLookAt(Object EventData, Object EventSource, XComGameState GameState, Name Event, Object CallbackData)
+{
+	if (IEC_StrategyWorldEntity(EventSource) != none)
+	{
+		SelectEntity(XComGameState_BaseObject(EventSource).GetReference());
+	}
+	else
+	{
+		`REDSCREEN(GetFuncName() $ "::" @ EventSource.Class @ "cannot be selected");
+	}
+	return ELR_NoInterrupt;
+}
+
+
+// General-purpose function to select a given entity. Compare to XComTacticalController::Visualizer_SelectUnit
+function SelectEntity(StateObjectReference NewEntity)
 {
 	local Actor Vis;
+	local XComGameState_BaseObject O;
 	if (SelectedEntity.ObjectID > 0)
 	{
 		Deselect();
 	}
 	SelectedEntity = NewEntity;
+	O = `XCOMHISTORY.GetGameStateForObjectID(SelectedEntity.ObjectID);
+	`XEVENTMGR.TriggerEvent('BaseCamLookAt', O, O);
 	ShowSelectionRing = true;
 	Vis = `XCOMHISTORY.GetVisualizer(NewEntity.ObjectID);
 	SelectionRingLocation = Vis.Location;
@@ -214,9 +252,9 @@ event PlayerTick( float DeltaTime )
 		Data = Pathable.Path_GetMoverData();
 		if (PathResult.Data != Data
 		|| PathResult.GoalPosition != End 
-		|| PathResult.StartPosition != Pathable.Path_GetStrategyWorldEntity().Ent_GetPosition())
+		|| PathResult.StartPosition != IEC_StrategyWorldEntity(Pathable).Ent_GetPosition())
 		{
-			PathResult = `ECGAME.DefaultPathfinder.BuildPath(Pathable.Path_GetStrategyWorldEntity().Ent_GetPosition(), End, Data);
+			PathResult = `ECGAME.DefaultPathfinder.BuildPath(IEC_StrategyWorldEntity(Pathable).Ent_GetPosition(), End, Data);
 		}
 	}
 }

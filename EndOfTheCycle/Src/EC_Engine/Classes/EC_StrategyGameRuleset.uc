@@ -262,6 +262,11 @@ state Rollover
 Begin:
 	DoRollover();
 	`log("Rollover");
+	Sleep(1.0f);
+	while(WaitingForVisualizer())
+	{
+		Sleep(0.0f);
+	}	
 	GotoState(GetNextState(GetStateName()));
 }
 
@@ -279,6 +284,11 @@ state BeginTurnPhase
 Begin:
 	BeginTurnPhase();
 	`log("BeginTurnPhase");
+	Sleep(1.0f);
+	while(WaitingForVisualizer())
+	{
+		Sleep(0.0f);
+	}
 	GotoState(GetNextState(GetStateName()));
 }
 
@@ -315,8 +325,12 @@ Begin:
 		}
 		// Process turn phase
 		CachedTurnPhaseResult = StepTurnPhase();
+		Sleep(0.5f);
 	} until(CachedTurnPhaseResult.Type == eECTPPRT_End);
-
+	while(WaitingForVisualizer())
+	{
+		Sleep(0.0f);
+	}
 	GotoState(GetNextState(GetStateName()));
 }
 
@@ -334,6 +348,11 @@ state EndTurnPhase
 
 Begin:
 	EndTurnPhase();
+	Sleep(1.0f);
+	while(WaitingForVisualizer())
+	{
+		Sleep(0.0f);
+	}
 	GotoState(GetNextState(GetStateName()));
 }
 
