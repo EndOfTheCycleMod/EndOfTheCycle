@@ -204,6 +204,8 @@ event PlayerTick( float DeltaTime )
 	local int End;
 	local MoverData Data;
 	local IEC_Pathable Pathable;
+
+	super.PlayerTick(DeltaTime);
 	
 	Pathable = GetCurrentPathable();
 	if (Pathable != none)
