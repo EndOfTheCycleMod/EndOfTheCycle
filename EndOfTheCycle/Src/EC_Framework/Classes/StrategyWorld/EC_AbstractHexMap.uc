@@ -19,6 +19,8 @@ var const PointNeighbors Directions[2];
 
 var int Width, Height;
 
+var EC_HexVisibilityPathfinder Vis;
+
 var transient int LastHoveredTile;
 
 var transient ScriptedTexture FOWTexture;
@@ -57,6 +59,12 @@ function int GetTileInfo(int Pos)
 }
 
 function int GetEdgeInfo(int Pos)
+{
+	`REDSCREEN("Error:" @ default.Class @ "needs to override" @ GetFuncName());
+	return 0;
+}
+
+function int GetTileElevation(int Pos)
 {
 	`REDSCREEN("Error:" @ default.Class @ "needs to override" @ GetFuncName());
 	return 0;
@@ -120,6 +128,42 @@ function int GetTileDistance(int A, int B)
 		Abs(PB.Y - PA.Y),     
 		Abs(FCeil(PB.Y / -2.0f) + PB.X - FCeil(PA.Y / -2.0f) - PA.X)),
 		Abs(-PB.Y - FCeil(PB.Y / -2.0f) - PB.X + PA.Y  + FCeil(PA.Y / -2.0f) + PA.X));
+}
+
+function array<int> GetTilesInRange(int Pos, int Range)
+{
+
+}
+
+function bool TraceTiles(int Start, int End, optional int HeightOffset = 0, optional int SightRange = -1)
+{
+
+}
+
+function array<int> GetVisibleTiles(int Start, int SightRange, optional int HeightOffset = 0)
+{
+	local PathfindingResult Result;
+	local MoverData M;
+	local array<int> VisibleTiles;
+	local int i;
+	
+	Vis.Init(self);
+	Vis.SetParams(HeightOffset, SightRange);
+
+	// MoverData can stay empty -- it's not relevant for the HexVisibilityPathfinder
+	Result = Vis.BuildPath(Start, -1, M);
+	// Now we know the shortest obstacle-avoiding path to each tile -- discard tiles that need to
+	// go around obstacles
+	for (i = 0; i < Result.Nodes.Length; i++)
+	{
+		`assert(Result.Nodes[i].Distance >= GetTileDistance(Start, Result.Nodes[i].Tile));
+		if (Result.Nodes[i].Distance == GetTileDistance(Start, Result.Nodes[i].Tile))
+		{
+			// The path we found was the shortest possible -- add it to the result
+			VisibleTiles.AddItem(Result.Nodes[i].Tile);
+		}
+	}
+	return VisibleTiles;
 }
 
 function array<IntPoint> GetValidPositionRanges()
@@ -213,6 +257,7 @@ function InitResources()
 	if (FOWTexture == none)
 	{
 		FOWTexture = ScriptedTexture(class'ScriptedTexture'.static.Create(Max(Width, Height), Max(Width, Height), PF_A8R8G8B8, MakeLinearColor(1, 1, 1, 1), false, true, false, /*MIC -- see comment above*/none));
+		FOWTexture.Filter = TF_Nearest;
 		FOWTexture.Render = RenderFOW;
 		MIC.SetTextureParameterValue('FOWTex', FOWTexture);
 	}
@@ -240,25 +285,27 @@ simulated function RenderFOW(Canvas C)
 {
 	local int i;
 	local IntPoint P;
-	local Texture2D ColorTexture;
 	`log("Render!!");
 	// TODO
 	//FOWTexture.PreOptimizeDrawTiles(...);
 	FOWTexture.bSkipNextClear = true;
 	for (i = 0; i < ImmediateQueue.Length; i++)
 	{
+		// SetDrawColor
 		P = GetTile2DCoords(ImmediateQueue[i].Tile);
+		C.SetPos(P.X, P.Y);
 		switch (ImmediateQueue[i].NewState)
 		{
 			case eECVS_Unexplored:
 			case eECVS_Explored:
-				ColorTexture = class'Console'.default.DefaultTexture_Black;
+				C.SetDrawColor(0,0,0,255);
+				break;
 			case eECVS_Vision:
 			case eECVS_Full:
-				ColorTexture = class'Console'.default.DefaultTexture_White;
+				C.SetDrawColor(255,255,255,255);
+				break;
 		}
-		C.SetPos(P.X, P.Y);
-		C.DrawTile(ColorTexture, 1, 1, 0, 0, 32, 32);
+		C.DrawRect(1, 1);
 	}
 	ImmediateQueue.Length = 0;
 }
@@ -284,6 +331,12 @@ function ReleaseResources()
 	`log("Cleaning up resources");
 	FOWTexture.Render = none;
 	FOWTexture = none;
+}
+
+function DrawDebugLabel(Canvas kCanvas)
+{
+	kCanvas.SetPos(10, 10);
+	kCanvas.DrawTile(FOWTexture, Max(Width, Height) * 3, Max(Width, Height) * 3, 0, 0, Max(Width, Height), Max(Width, Height));
 }
 
 `define assrt(a,b) InAssertEquals(`{a}, `{b}, "`{a}", string(`{b}));
@@ -318,4 +371,8 @@ defaultproperties
 {
 	Directions(0)=(p[0]=(X=1, Y=0), p[1]=(X=0, Y=-1), p[2]=(X=-1, Y=-1), p[3]=(X=-1, Y=0), p[4]=(X=-1, Y=1), p[5]=(X=0, Y=1))
 	Directions(1)=(p[0]=(X=1, Y=0), p[1]=(X=1, Y=-1), p[2]=(X=0, Y=-1), p[3]=(X=-1, Y=0), p[4]=(X=0, Y=1), p[5]=(X=1, Y=1))
+
+	Begin Object Class=EC_HexVisibilityPathfinder Name=HexVis
+	End Object
+	Vis=HexVis
 }

@@ -28,6 +28,7 @@ function X2Camera CreateDefaultCamera();
 function array<int> GetAdjacentMapPositions(int Pos);
 function bool AreAdjacent(int A, int B);
 
+// Return position and rotation of the center point of this tile
 function bool GetWorldPositionAndRotation(int PosHandle, out vector pos, out rotator rot);
 
 // Return the handle of the currently highlighted tile, or a negative integer to indicate that no tile is highlighted
@@ -39,11 +40,21 @@ function int GetTileInfo(int Pos);
 function int GetEdgeInfo(int Pos);
 // The shortest tile distance, disregarding any terrain types or features
 function int GetTileDistance(int A, int B);
-// Get all tiles that intersect with a line trace, including A and B
-//function array<int> TraceTiles(int A, int B);
-// Draw a straight line from A to B, defined as a list of tiles where
-// adjacency in the list is equivalent to adjacency on the map
-//function array<int> DrawLine(int A, int B);
+// Return all tiles for which GetTileDistance(Pos, tile) <= Range
+function array<int> GetTilesInRange(int Pos, int Range);
+// The gameplay elevation for this tile -- used for visibility
+// and other game mechanics
+// Exact values TBD, but should probably be something like:
+// 0: Sea level
+// 1-4: Lowlands
+// 5-8: Highlands
+// 9-10: Mountains
+function int GetTileElevation(int Pos);
+// Return whether a visibility trace from Start to End succeeds with the specified Sight Range
+// If SightRange == -1, then just test if there is a clear vision
+function bool TraceTiles(int Start, int End, optional int HeightOffset = 0, optional int SightRange = -1);
+// Return all tiles visible from Start + HeightOffset within Range
+function array<int> GetVisibleTiles(int Start, int SightRange, optional int HeightOffset = 0);
 
 // Return an array of inclusive ranges representing valid tile handles
 // The Map interface doesn't require that this is a good representation,
@@ -55,3 +66,4 @@ function IEC_StratMapFOWVisualizer GetFOWVisualizer();
 // Debug functionality
 static function CreateRandomMap(XComGameState NewGameState);
 function string GetPositionDebugInfo(int Pos);
+function DrawDebugLabel(Canvas kCanvas);

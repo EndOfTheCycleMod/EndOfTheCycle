@@ -51,7 +51,7 @@ function TPOV GetCameraLocationAndOrientation()
 	POV.Rotation.Yaw = 270 * DegToUnrRot;
 	POV.Rotation.Roll = 0 * DegToUnrRot;
 	POV.Location = CurrentLookAt + (1200 * vect(0,0,1)) + (1200 * tan(52 * PI / 180) * vect(0,1,0));
-	
+
 	return POV;
 }
 

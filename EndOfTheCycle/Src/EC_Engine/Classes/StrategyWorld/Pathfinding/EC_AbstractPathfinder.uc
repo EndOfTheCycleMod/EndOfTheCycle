@@ -1,6 +1,6 @@
 // Base class for a path solver. Provides a default implementation of A*, though
 // subclasses are free to use whatever they want to.
-class EC_Pathfinder extends Actor dependson(EC_VisibilityManager);
+class EC_AbstractPathfinder extends Object abstract dependson(EC_VisibilityManager);
 
 enum EECUnitDomain
 {
@@ -22,6 +22,9 @@ struct PathfindingNode
 };
 
 // Stores properties of a given movable object about its mobility
+// Can we pull this out of this class and move it down to DefaultUnitPathfinder?
+// The visibility pathfinder doesn't use any of this, so it shouldn't need to know
+// about it
 struct MoverData
 {
 	var int ObjectID; // Do we need this or do we introduce unneccessary dependencies? Keeping for comparison now
@@ -30,7 +33,7 @@ struct MoverData
 	var int CurrentMobility; // Leftover mobility for this turn
 	var int MoverFlags;
 	var EECUnitDomain Domain;
-	var class<EC_Pathfinder> PathfinderClass;
+	var class<EC_AbstractPathfinder> PathfinderClass;
 };
 
 // Stores an exploration from a path to a given goal
@@ -79,14 +82,6 @@ function PathfindingResult BuildPath(int Start, int End, MoverData MoveData)
 
 	if (End < 0 || CanEnter(End, MoveData))
 	{
-		/*if (End < 0)
-		{
-			`log("Dijkstra from" @ Map.GetPositionDebugInfo(Start));
-		}
-		else
-		{
-			`log("Path from" @ Map.GetPositionDebugInfo(Start) @ "to" @ Map.GetPositionDebugInfo(End));
-		}*/
 		Node = EmptyNode;
 		Node.Tile = Start;
 		Node.Distance = 0;
@@ -107,7 +102,7 @@ function PathfindingResult BuildPath(int Start, int End, MoverData MoveData)
 			Neighbors = GetNeighbors(Node.Tile);
 			foreach Neighbors(N)
 			{
-				if (!CanEnter(N, MoveData))
+				if (!CanEnter(N, MoveData) || !CanCross(Node.Tile, N, MoveData))
 					continue;
 				if (ClosedSet.Find('Tile', N) != INDEX_NONE)
 					continue;
@@ -155,6 +150,7 @@ function PathfindingResult BuildPath(int Start, int End, MoverData MoveData)
 		{
 			Node = ClosedSet[Next];
 			Next = Node.VisitedViaIndex;
+			Node.VisitedViaIndex = -1;
 			Result.Nodes.InsertItem(0, Node);
 		}
 	}
@@ -193,6 +189,11 @@ function array<int> GetNeighbors(int Tile)
 {
 	return Map.GetAdjacentMapPositions(Tile);
 }
+
+// If this returns false, this tile can not be entered. If this returns true, this tile
+// can potentially be entered -- maybe only from some tiles that are neighboring this tile,
+// not all of them. It's also possible that there is no tile this tile can be entered from,
+// but the function may still return true! For definitive queries, use in combination with CanCross
 function bool CanEnter(int Tile, const out MoverData MoveData)
 {
 	switch (MoveData.Domain)

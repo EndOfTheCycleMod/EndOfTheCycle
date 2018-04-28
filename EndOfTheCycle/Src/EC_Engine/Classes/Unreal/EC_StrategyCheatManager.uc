@@ -1,8 +1,24 @@
 class EC_StrategyCheatManager extends XComCheatManager within EC_StrategyController dependson(IEC_StratMapFOWVisualizer);
 
+// Pathing
 var int PathingSourceTile;
 var int LastGoal;
 var PathfindingResult Result;
+
+// Visibility/FOW
+var int VisHeight, VisRange;
+var int LastTile;
+var array<FOWUpdateParams> UndoParams;
+
+
+enum EDebugState
+{
+	eDS_None,
+	eDS_Pathing,
+	eDS_Vision,
+};
+
+var EDebugState DebugState;
 
 // Override, `PRES -> `PRESBASE
 exec function EnablePostProcessEffect(name EffectName, bool bEnable)
@@ -13,14 +29,61 @@ exec function EnablePostProcessEffect(name EffectName, bool bEnable)
 exec function StartPathing()
 {
 	PathingSourceTile = `ECMAP.GetCursorHighlightedTile();
+	GotoDebugState(eDS_Pathing);
 }
 
-exec function EndPathing()
+exec function EndDebugMode()
 {
-	PathingSourceTile = -1;
+	GotoDebugState(eDS_None);
+}
+
+exec function StartVisibility(int Height, int Range)
+{
+	VisHeight = Height;
+	VisRange = Range;
+	GotoDebugState(eDS_Vision);
+}
+
+// CheatManager extends Object which is not Actor, so states aren't supported
+function GotoDebugState(EDebugState NewState)
+{
+	switch (DebugState)
+	{
+		case eDS_Pathing:
+			Pathing_EndState();
+			break;
+		case eDS_Vision:
+			Vision_EndState();
+			break;
+		default:
+	}
+
+	DebugState = NewState;
+	
+	switch (DebugState)
+	{
+		case eDS_Vision:
+			Vision_BeginState();
+			break;
+		default:
+	}
 }
 
 function DrawDebugLabel(Canvas kCanvas)
+{
+	switch (DebugState)
+	{
+		case eDS_Pathing:
+			Pathing_DrawDebugLabel(kCanvas);
+			break;
+		case eDS_Vision:
+			Vision_DrawDebugLabel(kCanvas);
+			break;
+		default:
+	}
+}
+
+function Pathing_DrawDebugLabel(Canvas kCanvas)
 {
 	local vector Pos, pos2D;
 	local rotator Rot;
@@ -51,10 +114,61 @@ function DrawDebugLabel(Canvas kCanvas)
 				kCanvas.DrawText(Result.Nodes[i].Distance);
 			}
 		}
-		else
-		{
+	}
+}
 
+function Pathing_EndState()
+{
+	PathingSourceTile = -1;
+	LastGoal = -1;
+}
+
+function Vision_BeginState()
+{
+	TheWorldIsDark();
+}
+
+function Vision_DrawDebugLabel(Canvas kCanvas)
+{
+	local int Tile, i;
+	local array<int> VisibleTiles;
+	local array<FOWUpdateParams> Params;
+	local FOWUpdateParams P;
+	local IEC_StratMapFOWVisualizer FOWVis;
+
+	Tile = `ECMAP.GetCursorHighlightedTile();
+	FOWVis = `ECMAP.GetFOWVisualizer();
+
+	if (Tile != LastTile && Tile > -1 && FOWVis.FOWInited())
+	{
+		LastTile = Tile;
+		VisibleTiles = `ECMAP.GetVisibleTiles(Tile, VisRange, VisHeight);
+		FOWVis.UpdateFOW(UndoParams, true);
+		UndoParams.Length = 0;
+		Params.Length = 0;
+		for (i = 0; i < VisibleTiles.Length; i++)
+		{
+			P.Tile = VisibleTiles[i];
+			P.NewState = eECVS_Full;
+			Params.AddItem(P);
+			// Maintain the params to undo this FOW tick for the next time. A bit wasteful, but cheats and testing
+			P.NewState = eECVS_Unexplored;
+			UndoParams.AddItem(P);
 		}
+		FOWVis.UpdateFOW(Params, true);
+	}
+}
+
+function Vision_EndState()
+{
+	local IEC_StratMapFOWVisualizer FOWVis;
+
+	LastTile = -1;
+	FOWVis = `ECMAP.GetFOWVisualizer();
+	if (FOWVis.FOWInited())
+	{
+		FOWVis.UpdateFOW(UndoParams, true);
+		UndoParams.Length = 0;
 	}
 }
 
@@ -76,8 +190,35 @@ exec function SetFOWState(bool st)
 	}
 }
 
+exec function TheWorldIsDark()
+{
+	local array<IntPoint> Ranges;
+	local IEC_StratMapFOWVisualizer FOWVis;
+	local array<FOWUpdateParams> Params;
+	local FOWUpdateParams P;
+	local int i, j;
+
+	Ranges = `ECMAP.GetValidPositionRanges();
+	FOWVis = `ECMAP.GetFOWVisualizer();
+	
+	if (FOWVis.FOWInited())
+	{
+		for (i = 0; i < Ranges.Length; i++)
+		{
+			for (j = Ranges[i].X; j <= Ranges[i].Y; j++)
+			{
+				P.Tile = j;
+				P.NewState = eECVS_Unexplored;
+				Params.AddItem(P);
+			}
+		}
+		FOWVis.UpdateFOW(Params, true);
+	}
+}
+
 defaultproperties
 {
 	PathingSourceTile=-1
 	LastGoal=-1
+	LastTile=-1
 }

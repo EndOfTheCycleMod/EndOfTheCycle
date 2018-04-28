@@ -171,7 +171,7 @@ function SelectTile(int Tile)
 	}
 }
 
-event PostBeginPlay()
+simulated event PostBeginPlay()
 {
 	local Object ThisObj;
 	super.PostBeginPlay();
@@ -281,6 +281,7 @@ function DrawDebugLabels(Canvas kCanvas)
 {
 	`ECRULES.DrawDebugLabel(kCanvas);
 	`ECCHEAT.DrawDebugLabel(kCanvas);
+	`ECMAP.DrawDebugLabel(kCanvas);
 	DrawDebugLabel(kCanvas);
 }
 

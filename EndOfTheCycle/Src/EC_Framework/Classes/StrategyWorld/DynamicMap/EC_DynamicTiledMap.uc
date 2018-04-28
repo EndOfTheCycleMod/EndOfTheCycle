@@ -145,6 +145,24 @@ function int GetEdgeInfo(int Pos)
 	return 0;
 }
 
+function int GetTileElevation(int Pos)
+{
+	local EC_GameState_MapTileData MapData;
+
+	MapData = EC_GameState_MapTileData(`XCOMHISTORY.GetSingleGameStateObjectForClass(class'EC_GameState_MapTileData'));
+
+	switch (MapData.Tiles[Pos])
+	{
+		case eECTT_Water:
+			return 0;
+		case eECTT_Flat:
+		case eECTT_Wilderness:
+			return 5;
+		case eECTT_Mountain:
+			return 9;
+	}
+}
+
 static function CreateRandomMap(XComGameState NewGameState)
 {
 	local EC_GameState_MapTileData Data;

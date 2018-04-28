@@ -1,4 +1,4 @@
-class EC_VisibilityManager extends Actor;
+class EC_VisibilityManager extends Object;
 
 enum EECVisState
 {
@@ -7,3 +7,11 @@ enum EECVisState
 	eECVS_Vision,     // Structures can be seen, but some details are hidden
 	eECVS_Full,       // Full info on everything
 };
+
+
+var IEC_StrategyMap Map;
+
+function Init(IEC_StrategyMap _Map)
+{
+	self.Map = _Map;
+}

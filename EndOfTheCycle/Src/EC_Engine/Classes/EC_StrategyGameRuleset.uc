@@ -69,6 +69,16 @@ simulated function bool WaitingForVisualizer()
 	return class'XComGameStateVisualizationMgr'.static.VisualizerBusy() || `XCOMVISUALIZATIONMGR.VisualizationTree != none;
 }
 
+/// <summary>
+/// Expanded version of WaitingForVisualizer designed for the end of a unit turn. WaitingForVisualizer and EndOfTurnWaitingForVisualizer would ideally be consolidated, but
+/// the potential for knock-on would be high as WaitingForVisualizer is used in many places for many different purposes.
+/// </summary>
+simulated function bool EndOfTurnWaitingForVisualizer()
+{
+	return !class'XComGameStateVisualizationMgr'.static.VisualizerIdleAndUpToDateWithHistory() || (`XCOMVISUALIZATIONMGR.VisualizationTree != none);
+}
+
+
 simulated function bool IsSavingAllowed()
 {
 	if (IsDoingLatentSubmission())
@@ -150,7 +160,7 @@ state InitGame
 	
 	function CreateDefaultPathfinder()
 	{
-		`ECGAME.DefaultPathfinder = Spawn(class'EC_Pathfinder');
+		`ECGAME.DefaultPathfinder = new class'EC_DefaultUnitPathfinder';
 		`ECGAME.DefaultPathfinder.Init(`ECMAP);
 	}
 
@@ -262,11 +272,10 @@ state Rollover
 Begin:
 	DoRollover();
 	`log("Rollover");
-	Sleep(1.0f);
-	while(WaitingForVisualizer())
+	while(EndOfTurnWaitingForVisualizer())
 	{
 		Sleep(0.0f);
-	}	
+	}
 	GotoState(GetNextState(GetStateName()));
 }
 
@@ -284,8 +293,7 @@ state BeginTurnPhase
 Begin:
 	BeginTurnPhase();
 	`log("BeginTurnPhase");
-	Sleep(1.0f);
-	while(WaitingForVisualizer())
+	while(EndOfTurnWaitingForVisualizer())
 	{
 		Sleep(0.0f);
 	}
@@ -314,7 +322,7 @@ Begin:
 	do
 	{
 		// Wait for the visualizer before waiting for new states
-		while(WaitingForVisualizer())
+		while(EndOfTurnWaitingForVisualizer())
 		{
 			Sleep(0.0f);
 		}
@@ -325,9 +333,8 @@ Begin:
 		}
 		// Process turn phase
 		CachedTurnPhaseResult = StepTurnPhase();
-		Sleep(0.5f);
 	} until(CachedTurnPhaseResult.Type == eECTPPRT_End);
-	while(WaitingForVisualizer())
+	while(EndOfTurnWaitingForVisualizer())
 	{
 		Sleep(0.0f);
 	}
@@ -348,8 +355,7 @@ state EndTurnPhase
 
 Begin:
 	EndTurnPhase();
-	Sleep(1.0f);
-	while(WaitingForVisualizer())
+	while(EndOfTurnWaitingForVisualizer())
 	{
 		Sleep(0.0f);
 	}

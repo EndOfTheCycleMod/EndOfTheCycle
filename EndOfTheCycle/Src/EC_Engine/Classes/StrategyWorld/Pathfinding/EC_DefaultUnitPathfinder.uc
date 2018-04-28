@@ -1,4 +1,4 @@
-class EC_DefaultUnitPathfinder extends EC_Pathfinder;
+class EC_DefaultUnitPathfinder extends EC_AbstractPathfinder;
 
 
 const MOVE_IGNORERIVERPENALTIES        = 0x0001;

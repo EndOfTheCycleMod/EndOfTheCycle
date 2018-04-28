@@ -1,7 +1,7 @@
 class EC_StrategyGame extends XComGameInfo;
 
 var IEC_StrategyMap Map;
-var EC_Pathfinder DefaultPathfinder;
+var EC_AbstractPathfinder DefaultPathfinder;
 
 
 var SimpleShapeManager ShapeMgr;

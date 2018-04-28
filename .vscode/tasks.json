@@ -9,7 +9,24 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": []
+            "problemMatcher": [{
+                // The problem is owned by the cpp language service.
+                "owner": "unrealscript",
+                // The file name for reported problems is absolute to the opened folder.
+                "fileLocation": ["absolute"],
+                // The actual pattern to match problems in the output.
+                "pattern": {
+                    "regexp": "^(.*):([0-9]*) : (Warning|Error), ([^\n]*)$",
+                    // The first match group matches the file name which is absolute
+                    "file": 1,
+                    // The second match group matches the line on which the problem occurred.
+                    "line": 2,
+                    // The third match group matches the problem's severity. Can be ignored. Then all problems are captured as errors.
+                    "severity": 3,
+                    // The fourth match group matches the message.
+                    "message": 4
+                }
+            }]
         },
         {
             "label": "buildHighlander",
