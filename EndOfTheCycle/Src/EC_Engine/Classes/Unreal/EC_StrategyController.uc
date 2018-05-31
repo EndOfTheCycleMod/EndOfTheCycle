@@ -1,5 +1,8 @@
 class EC_StrategyController extends XComPlayerController;
 
+var StateObjectReference ControllingPlayer;
+var EC_StrategyPlayer ControllingPlayerVisualizer;
+
 var StateObjectReference SelectedEntity;
 
 // TODO: Move
@@ -130,6 +133,13 @@ reliable client function ClientSetOnlineStatus()
 
 // TODO: Evaluate End
 
+
+function SetControllingPlayer(EC_GameState_StrategyPlayer PlayerState)
+{
+	ControllingPlayer = PlayerState.GetReference();
+	ControllingPlayerVisualizer = EC_StrategyPlayer(PlayerState.GetVisualizer());
+}
+
 function SelectTile(int Tile)
 {
 	local XComGameStateHistory History;
@@ -193,7 +203,7 @@ function EventListenerReturn OnSelectAndLookAt(Object EventData, Object EventSou
 {
 	if (IEC_StrategyWorldEntity(EventSource) != none)
 	{
-		SelectEntity(XComGameState_BaseObject(EventSource).GetReference());
+		SelectEntity(XComGameState_BaseObject(EventSource).GetReference(), true);
 	}
 	else
 	{
@@ -204,7 +214,7 @@ function EventListenerReturn OnSelectAndLookAt(Object EventData, Object EventSou
 
 
 // General-purpose function to select a given entity. Compare to XComTacticalController::Visualizer_SelectUnit
-function SelectEntity(StateObjectReference NewEntity)
+function SelectEntity(StateObjectReference NewEntity, optional bool LookAt = false)
 {
 	local Actor Vis;
 	local XComGameState_BaseObject O;
@@ -214,7 +224,10 @@ function SelectEntity(StateObjectReference NewEntity)
 	}
 	SelectedEntity = NewEntity;
 	O = `XCOMHISTORY.GetGameStateForObjectID(SelectedEntity.ObjectID);
-	`XEVENTMGR.TriggerEvent('BaseCamLookAt', O, O);
+	if (LookAt)
+	{
+		`XEVENTMGR.TriggerEvent('BaseCamLookAt', O, O);
+	}
 	ShowSelectionRing = true;
 	Vis = `XCOMHISTORY.GetVisualizer(NewEntity.ObjectID);
 	SelectionRingLocation = Vis.Location;
@@ -257,6 +270,10 @@ event PlayerTick( float DeltaTime )
 			PathResult = `ECGAME.DefaultPathfinder.BuildPath(IEC_StrategyWorldEntity(Pathable).Ent_GetPosition(), End, Data);
 		}
 	}
+	else
+	{
+		PathResult = default.PathResult;
+	}
 }
 
 protected function IEC_Pathable GetCurrentPathable()
@@ -267,7 +284,10 @@ protected function IEC_Pathable GetCurrentPathable()
 	if (SelectedEntity.ObjectID > 0)
 	{
 		Obj = `XCOMHISTORY.GetGameStateForObjectID(SelectedEntity.ObjectID);
-		Pathable = IEC_Pathable(Obj);
+		if (IEC_Pathable(Obj) != none && IEC_Pathable(Obj).Path_IsMovable())
+		{
+			Pathable = IEC_Pathable(Obj);
+		}
 	}
 	return Pathable;
 }

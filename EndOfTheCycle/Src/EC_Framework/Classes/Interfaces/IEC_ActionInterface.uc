@@ -8,7 +8,7 @@ interface IEC_ActionInterface;
 // The Actions subsystem may transform those, for example only using the first one
 function bool Act_HasAvailableActions(out array<ECPotentialTurnPhaseAction> Actions);
 // Whether this entity has queued actions (whether PerformQueuedActions changes the game state)
-function bool Act_HasQueuedActions();
+function bool Act_CanPerformQueuedActions(StateObjectReference Player);
 // If there's a queued path / healing / ... action, perform it
 // May make game state submissions
 function Act_PerformQueuedActions();

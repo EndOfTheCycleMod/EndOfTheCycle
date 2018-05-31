@@ -4,7 +4,8 @@
 interface IEC_Pathable;
 
 // Ent_isMovable should return the general possibility of
-// this unit moving. I.e. a landed avenger should probably return false.
+// this unit moving. I.e. a landed avenger should probably return false
+// Will be used to determine whether pathing UI is appropriate at all
 function bool Path_IsMovable();
 // Return information to the pathing system
 function MoverData Path_GetMoverData();

@@ -26,7 +26,6 @@ function BeginTurnPhase(XComGameState NewGameState)
 {
 	local int i;
 	local XComGameStateHistory History;
-	local EC_GameState_StrategyTurnPhaseEnhanced LocalPhase;
 	local EC_GameState_StrategyTurnPhaseSubsystem Subsystem;
 
 	super.BeginTurnPhase(NewGameState);
@@ -46,7 +45,6 @@ function EndTurnPhase(XComGameState NewGameState)
 {
 	local int i;
 	local XComGameStateHistory History;
-	local EC_GameState_StrategyTurnPhaseEnhanced LocalPhase;
 	local EC_GameState_StrategyTurnPhaseSubsystem Subsystem;
 
 	super.EndTurnPhase(NewGameState);
@@ -90,8 +88,10 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 	local EC_GameState_StrategyTurnPhaseEnhanced LocalPhase;
 	local EC_GameState_StrategyTurnPhaseSubsystem Subsystem;
 	local XComGameState NewGameState;
+	local ECTurnPhaseStep NewStep;
 
 	History = `XCOMHISTORY;
+	NewStep = Step;
 	
 	// TODO: Split game state code and action code.
 	GetMyTemplate().ProcessTurnPhase(self.GetReference(), Result.PotentialActions, Step);
@@ -108,6 +108,7 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 		// actions should be independent of step
 		LocalPhase = EC_GameState_StrategyTurnPhaseEnhanced(NewGameState.ModifyStateObject(self.Class, self.ObjectID));
 		LocalPhase.Step = eECTPS_Step;
+		NewStep = eECTPS_Step;
 	}
 	else if (Step == eECTPS_Step && Result.PotentialActions.Length == 0)
 	{
@@ -115,6 +116,7 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 		{
 			// add an action that moves us to finalize when the player presses a button
 			Action = EmptyAction;
+			Action.Tag = 'EndTurnFiller';
 			Action.Type = eECPTPAT_Optional;
 			Action.Source = self.GetReference();
 			Action.Player = `ECRULES.CurrentPlayer;
@@ -129,6 +131,7 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 			// move to finalize immediately
 			LocalPhase = EC_GameState_StrategyTurnPhaseEnhanced(NewGameState.ModifyStateObject(self.Class, self.ObjectID));
 			LocalPhase.Step = eECTPS_Finalize;
+			NewStep = eECTPS_Finalize;
 		}
 	}
 
@@ -141,7 +144,7 @@ function ECTurnPhaseProcessResult ProcessTurnPhase()
 		History.CleanupPendingGameState(NewGameState);
 	}
 
-	Result.Type = (Step == eECTPS_Finalize && Result.PotentialActions.Length == 0) ? eECTPPRT_End : eECTPPRT_ActionsAvailable;
+	Result.Type = (NewStep == eECTPS_Finalize && Result.PotentialActions.Length == 0) ? eECTPPRT_End : eECTPPRT_ActionsAvailable;
 
 	return Result;
 }

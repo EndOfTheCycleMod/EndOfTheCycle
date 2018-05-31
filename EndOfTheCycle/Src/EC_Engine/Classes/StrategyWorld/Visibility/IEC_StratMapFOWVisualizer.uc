@@ -1,12 +1,6 @@
 // Interface for class managing the FOW
 interface IEC_StratMapFOWVisualizer;
 
-struct FOWUpdateParams
-{
-	var int Tile;
-	var EECVisState NewState;
-};
-
 // Create and initialize whatever resources are needed
 function InitResources();
 
@@ -14,6 +8,8 @@ function bool FOWInited();
 
 // Update the current FOW state. If Immediate is passed, no fany animations should be done
 function UpdateFOW(array<FOWUpdateParams> Params, bool Immediate);
+// Draw the Entire FOW state to the NewState. Much more performant
+function Clear(EECVisState NewState);
 
-// As if we're ever going to call this
+// Do we need this? Can the Map just subscribe to world cleanup
 function ReleaseResources();

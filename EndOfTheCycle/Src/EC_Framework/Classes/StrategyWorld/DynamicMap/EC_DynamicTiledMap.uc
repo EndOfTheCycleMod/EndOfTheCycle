@@ -34,6 +34,12 @@ function LoadMap()
 	Height = MapData.Height;
 	`log(Width $"x"$ Height);
 
+	Geom = new class'HexGeometry';
+	Geom.SetDimensions(Width, Height);
+
+	Vis = new (self) class'EC_HexVisibilityPathfinder';
+	Vis.Init(self);
+
 	HexMesh = StaticMesh(`CONTENT.RequestGameArchetype("EC_Hex.SM_Hex"));
 	ParentMat = Material(`CONTENT.RequestGameArchetype("EC_Hex.M_Hex"));
 	

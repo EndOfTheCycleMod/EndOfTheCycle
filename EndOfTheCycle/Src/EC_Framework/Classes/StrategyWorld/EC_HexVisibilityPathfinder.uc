@@ -3,6 +3,7 @@
 // The general idea is to find the shortest path to the target / each tile, avoiding obstacles, and discard
 // tiles that aren't reached with the shortest path.
 // This is a very simple algorithm that probably ends up being rather counter-intuitive
+// (Follow-up: It's atrocious in some cases)
 // A better, but much more complicated algorithm can be found at http://www-cs-students.stanford.edu/~amitp/Articles/HexLOS.html
 class EC_HexVisibilityPathfinder extends EC_AbstractPathfinder within EC_AbstractHexMap;
 

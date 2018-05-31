@@ -63,3 +63,21 @@ function SetRelationTowardsPlayer(name PlayerName, int Relation)
 	`assert((rel & PLR_RELATION_KNOWN) != 0);
 	m_PlayerRelations[i].PlayerRelationFlags = rel;
 }
+
+
+function Actor CreateVisualizer()
+{
+	local EC_StrategyPlayer Vis;
+
+	Vis = EC_StrategyPlayer(`XCOMHISTORY.GetVisualizer(self.ObjectID));
+	if (Vis != none)
+	{
+		`REDSCREEN(default.Class $ "::" $ GetFuncName() @ "called even though Visualizer already exists\n" @ GetScriptTrace());
+		return Vis;
+	}
+
+	Vis = class'WorldInfo'.static.GetWorldInfo().Spawn(GetMyTemplate().PlayerVisClass);
+	`XCOMHISTORY.SetVisualizer(self.ObjectID, Vis);
+	Vis.InitFromState(self);
+	return Vis;
+}

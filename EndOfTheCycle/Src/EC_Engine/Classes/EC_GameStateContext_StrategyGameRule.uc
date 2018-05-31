@@ -29,7 +29,7 @@ function XComGameState ContextBuildGameState()
 	local XComGameStateHistory History;
 	local EC_GameState_PersistentTurnData TurnData;
 	local EC_GameState_StrategyTurnPhase Phase, PhaseIterator, UpdatedPhase;
-	local EC_GameStateContext_StrategyGameRule NewContext;
+	//local EC_GameStateContext_StrategyGameRule NewContext;
 	local EC_StrategyTurnPhaseTemplate TurnPhaseTemplate;
 	local EC_StrategyElementTemplateManager StrategyElementTemplateManager;
 	local name TurnPhaseTemplateName;
@@ -51,7 +51,7 @@ function XComGameState ContextBuildGameState()
 		case eECStrategyGameRule_TurnPhaseBegin: 
 			// Take the current turn phase and begin it properly
 			NewGameState = History.CreateNewGameState(true, self);
-			NewContext = EC_GameStateContext_StrategyGameRule(NewGameState.GetContext());
+			//NewContext = EC_GameStateContext_StrategyGameRule(NewGameState.GetContext());
 			TurnData = GetAndAddTurnData(NewGameState);
 			Phase = EC_GameState_StrategyTurnPhase(History.GetGameStateForObjectID(TurnData.TurnPhase.ObjectID));
 			Phase = EC_GameState_StrategyTurnPhase(NewGameState.ModifyStateObject(class'EC_GameState_StrategyTurnPhase', TurnData.TurnPhase.ObjectID));
@@ -59,7 +59,7 @@ function XComGameState ContextBuildGameState()
 			break;
 		case eECStrategyGameRule_SetupPlayerPhases:
 			NewGameState = History.CreateNewGameState(true, self);
-			NewContext = EC_GameStateContext_StrategyGameRule(NewGameState.GetContext());
+			//NewContext = EC_GameStateContext_StrategyGameRule(NewGameState.GetContext());
 			TurnData = GetAndAddTurnData(NewGameState);
 			
 			StrategyElementTemplateManager = class'EC_StrategyElementTemplateManager'.static.GetStrategyElementTemplateManager();
@@ -82,7 +82,7 @@ function XComGameState ContextBuildGameState()
 		case eECStrategyGameRule_RolloverPlayers:
 			// Advance the player index and remove all old turn data
 			NewGameState = History.CreateNewGameState(true, self);
-			NewContext = EC_GameStateContext_StrategyGameRule(NewGameState.GetContext());
+			//NewContext = EC_GameStateContext_StrategyGameRule(NewGameState.GetContext());
 			TurnData = GetAndAddTurnData(NewGameState);
 			foreach History.IterateByClassType(class'EC_GameState_StrategyTurnPhase', PhaseIterator)
 			{
@@ -100,7 +100,7 @@ function XComGameState ContextBuildGameState()
 		case eECStrategyGameRule_RolloverPhases:
 			// Advance the turn phase
 			NewGameState = History.CreateNewGameState(true, self);
-			NewContext = EC_GameStateContext_StrategyGameRule(NewGameState.GetContext());
+			//NewContext = EC_GameStateContext_StrategyGameRule(NewGameState.GetContext());
 			TurnData = GetAndAddTurnData(NewGameState);
 			Phase = EC_GameState_StrategyTurnPhase(History.GetGameStateForObjectID(TurnData.TurnPhase.ObjectID));
 			TurnData.TurnPhase = Phase.NextTurnPhase;

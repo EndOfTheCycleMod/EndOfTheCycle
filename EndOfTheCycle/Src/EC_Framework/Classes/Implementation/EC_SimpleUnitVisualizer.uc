@@ -14,11 +14,23 @@ function EntVis_SetLocation(vector NewLocation)
 	SetLocation(NewLocation);
 }
 
+function EntVis_Hide()
+{
+	SetVisible(false);
+}
+
+function EntVis_Show()
+{
+	SetVisible(true);
+}
+
+function EntVis_SetFoggy(string FoggyState);
+
+
 event PostBeginPlay()
 {
 	// Temp Mesh
 	StaticMeshComponent.SetStaticMesh(StaticMesh(`CONTENT.RequestGameArchetype("Strat_Ship_Int_Room_RecoveryCenter.Meshes.AVG_SoldierPoseStand")));
-	`log(StaticMeshComponent.StaticMesh);
 }
 
 defaultproperties

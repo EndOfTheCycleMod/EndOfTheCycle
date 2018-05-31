@@ -30,16 +30,13 @@ function CreateRandomMap(int w, int h)
 	local int i, j;
 	local int LandBudget, ChunkSizeMin, ChunkSizeMax, ChunkSize;
 	local float TargetLandRatio;
-	local EC_DynamicTiledMap TempMap;
+	local HexGeometry Geom;
 
 	Width = w;
 	Height = h;
 
-	// TODO: Unfizzle this
-	TempMap = class'WorldInfo'.static.GetWorldInfo().Spawn(class'EC_DynamicTiledMap');
-	TempMap.Height = Height;
-	TempMap.Width = Width;
-	TempMap.TileMeshes.Length = Height * Width;
+	Geom = new class'HexGeometry';
+	Geom.SetDimensions(Width, Height);
 
 	TargetLandRatio = 0.5;
 	
@@ -65,7 +62,7 @@ function CreateRandomMap(int w, int h)
 	while (LandBudget > 0)
 	{
 		ChunkSize = Rand(ChunkSizeMax - ChunkSizeMin) + ChunkSizeMin;
-		LandBudget = RaiseTerrain(ChunkSize, LandBudget, TempMap);
+		LandBudget = RaiseTerrain(ChunkSize, LandBudget, Geom);
 	}
 	for (i = 0; i < h; i++)
 	{
@@ -74,10 +71,9 @@ function CreateRandomMap(int w, int h)
 			Tiles[i * w + j] = EECTileType(Clamp(TempTiles[i * w + j].Height, 0, 3));
 		}
 	}
-	TempMap.Destroy();
 }
 
-function int RaiseTerrain(int ChunkSize, int LandBudget, EC_DynamicTiledMap Map)
+function int RaiseTerrain(int ChunkSize, int LandBudget, HexGeometry Geom)
 {
 	local int size, rise;
 	local array<int> TileQueue;
@@ -87,7 +83,7 @@ function int RaiseTerrain(int ChunkSize, int LandBudget, EC_DynamicTiledMap Map)
 	local int Ctr;
 	GlobalStep++;
 
-	NewTile = Rand(Map.TileMeshes.Length);
+	NewTile = Rand(Geom.Width * Geom.Height);
 
 	TempTiles[NewTile].Priority = 0;
 	TempTiles[NewTile].MarkStep = GlobalStep;
@@ -109,14 +105,14 @@ function int RaiseTerrain(int ChunkSize, int LandBudget, EC_DynamicTiledMap Map)
 		}
 		TempTiles[Tile].Height = Min(3, TempTiles[Tile].Height + rise);
 		size++;
-		Neighbors = Map.GetAdjacentMapPositions(Tile);
+		Neighbors = Geom.GetAdjacentMapPositions(Tile);
 		for (i = 0; i < Neighbors.Length; i++)
 		{
 			if (TempTiles[Neighbors[i]].MarkStep < GlobalStep)
 			{
 				NewTile = Neighbors[i];
 				TempTiles[NewTile].MarkStep = GlobalStep;
-				TempTiles[NewTile].Priority = Map.GetTileDistance(Ctr, NewTile);
+				TempTiles[NewTile].Priority = Geom.GetTileDistance(Ctr, NewTile);
 //				if (Rand(100) < 25)
 //				{
 					TempTiles[NewTile].Priority *= (1 + FRand());

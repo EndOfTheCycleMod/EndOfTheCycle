@@ -93,6 +93,7 @@ exec function DropTestSoldier()
 		XComGameStateContext_ChangeContainer(NewGameState.GetContext()).BuildVisualizationFn = VisualizeTestSoldier;
 
 		NewUnit = EC_GameState_SimpleUnit(NewGameState.CreateNewStateObject(class'EC_GameState_SimpleUnit'));
+		NewUnit.ControllingPlayer = `ECRULES.CurrentPlayer;
 		NewUnit.Ent_ForceSetPosition(Tile, NewGameState);
 		NewUnit.Act_SetupActionsForBeginTurn(NewGameState, `ECRULES.CurrentPlayer);
 		`GAMERULES.SubmitGameState(NewGameState);

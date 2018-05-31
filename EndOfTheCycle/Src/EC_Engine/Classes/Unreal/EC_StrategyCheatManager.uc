@@ -192,28 +192,19 @@ exec function SetFOWState(bool st)
 
 exec function TheWorldIsDark()
 {
-	local array<IntPoint> Ranges;
 	local IEC_StratMapFOWVisualizer FOWVis;
-	local array<FOWUpdateParams> Params;
-	local FOWUpdateParams P;
-	local int i, j;
 
-	Ranges = `ECMAP.GetValidPositionRanges();
 	FOWVis = `ECMAP.GetFOWVisualizer();
 	
 	if (FOWVis.FOWInited())
 	{
-		for (i = 0; i < Ranges.Length; i++)
-		{
-			for (j = Ranges[i].X; j <= Ranges[i].Y; j++)
-			{
-				P.Tile = j;
-				P.NewState = eECVS_Unexplored;
-				Params.AddItem(P);
-			}
-		}
-		FOWVis.UpdateFOW(Params, true);
+		FOWVis.Clear(eECVS_Unexplored);
 	}
+}
+
+exec function SyncFOW()
+{
+	`ECGAME.VisibilityManager.SyncFOW();
 }
 
 defaultproperties

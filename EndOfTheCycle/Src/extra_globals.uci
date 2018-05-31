@@ -10,6 +10,7 @@
 `define ECMAP EC_StrategyGame(class'Engine'.static.GetCurrentWorldInfo().Game).Map
 `define ECCAMSTACK EC_CameraStack(EC_StrategyCamera(EC_StrategyController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).PlayerCamera).CameraStack)
 
+`define ECCTRL EC_StrategyController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController())
 `define ECPRES EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres)
 `define ECHUDBASE EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres).StrategyHUD
 `define ECHUD EC_UIStrategyHUD(EC_StrategyPresentationLayer(XComPlayerController(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController()).Pres).StrategyHUD)

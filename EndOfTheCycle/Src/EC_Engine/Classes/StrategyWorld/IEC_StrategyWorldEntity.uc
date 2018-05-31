@@ -21,3 +21,7 @@ function Actor Ent_FindOrCreateVisualizer();
 // force the visualizer to reflect the state passed via FromGameState,
 // or to the current state if FromGameState == none
 function Ent_SyncVisualizer(optional XComGameState FromGameState = none);
+
+// Whether this entity supports storing and showing "outdated" states in FOW
+function bool Ent_SupportsFoggyState();
+function string Ent_ToFoggyState();

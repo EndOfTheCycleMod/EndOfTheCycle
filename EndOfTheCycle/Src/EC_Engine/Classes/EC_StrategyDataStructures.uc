@@ -27,6 +27,7 @@ enum ECPotentialTurnPhaseActionType
 
 struct ECPotentialTurnPhaseAction
 {
+	var name Tag; // Tag for other systems to identify this action
 	var ECPotentialTurnPhaseActionType Type;
 	var StateObjectReference Source;
 	var StateObjectReference Player; // The player responsible for this action

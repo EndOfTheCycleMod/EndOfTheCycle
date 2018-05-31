@@ -30,23 +30,31 @@ function PostProcessTurnPhase(StateObjectReference PhaseRef, out array<ECPotenti
 	local XComGameState_BaseObject O;
 	local IEC_ActionInterface ActionO;
 	local array<ECPotentialTurnPhaseAction> LocalActions;
+	local int i;
+	local bool PerformActions;
 	History = `XCOMHISTORY;
 
 	// If we want to finalize, ask all entities to perform
 	// their queued actions
+	// Warning: If we don't catch some actions here, it's possible that the actions
+	// leak over to the next player! TODO: Maybe we need to rewrite EC_GameState_StrategyTurnPhaseEnhanced
+	// to actively notify it of any queued actions
 	if (Step == eECTPS_Finalize)
 	{
-		foreach History.IterateByClassType(class'XComGameState_BaseObject', O)
+		PerformActions = true;
+		while (PerformActions)
 		{
-			ActionO = IEC_ActionInterface(O);
-			if (ActionO != none)
+			PerformActions = false;
+			foreach History.IterateByClassType(class'XComGameState_BaseObject', O)
 			{
-				if (ActionO.Act_HasQueuedActions() && ActionO.Act_HasAvailableActions(LocalActions))
+				ActionO = IEC_ActionInterface(O);
+				if (ActionO != none)
 				{
-					ActionO.Act_PerformQueuedActions();
-					// We (should have) made a game state submission. We must stop this loop
-					// and show the user the update state
-					break;
+					if (ActionO.Act_CanPerformQueuedActions(`ECRULES.CurrentPlayer))
+					{
+						PerformActions = true;
+						ActionO.Act_PerformQueuedActions();
+					}
 				}
 			}
 		}
@@ -58,13 +66,13 @@ function PostProcessTurnPhase(StateObjectReference PhaseRef, out array<ECPotenti
 		if (ActionO != none)
 		{
 			LocalActions.Length = 0;
-			if (!ActionO.Act_HasQueuedActions() && ActionO.Act_HasAvailableActions(LocalActions))
+			if (!ActionO.Act_CanPerformQueuedActions(`ECRULES.CurrentPlayer) && ActionO.Act_HasAvailableActions(LocalActions))
 			{
 				// We have actions available for a thing that doesn't have any queued actions
-				// Copy over the first one
-				PotentialActions.AddItem(LocalActions[0]);
-				`log("Has Queued Path!!");
-				// Continue with the loop -- we want to show the user all potential actions
+				for (i = 0; i < LocalActions.Length; i++)
+				{
+					PotentialActions.AddItem(LocalActions[i]);
+				}
 			}
 		}
 	}

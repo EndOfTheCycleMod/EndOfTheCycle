@@ -1,9 +1,11 @@
-class EC_GameState_SimpleUnit extends XComGameState_BaseObject implements(IEC_Unit, IEC_StrategyWorldEntity, IEC_Pathable, IEC_ActionInterface);
+class EC_GameState_SimpleUnit extends XComGameState_BaseObject implements(IEC_Unit, IEC_StrategyWorldEntity, IEC_Pathable, IEC_ActionInterface, IEC_VisibilityInterface);
 
-var int CurrentPosition;
+var protected int CurrentPosition;
 var int Mobility;
 
-var array<PathfindingNode> Path;
+var protected array<PathfindingNode> Path;
+
+var StateObjectReference ControllingPlayer;
 // IEC_Unit Interface
 
 function name Un_GetUnitTemplateName()
@@ -70,12 +72,12 @@ function Ent_ForceSetPosition(int Pos, XComGameState NewGameState)
 
 function StateObjectReference Ent_GetStrategyOwningPlayer()
 {
-
+	return ControllingPlayer;
 }
 
 function StateObjectReference Ent_GetStrategyControllingPlayer()
 {
-
+	return ControllingPlayer;
 }
 
 function Actor Ent_GetVisualizer()
@@ -135,6 +137,13 @@ function Ent_SyncVisualizer(optional XComGameState FromGameState = none)
 	}
 }
 
+function bool Ent_SupportsFoggyState()
+{
+	return false;
+}
+
+function string Ent_ToFoggyState();
+
 // IEC_Pathable Interface
 function bool Path_IsMovable()
 {
@@ -174,9 +183,10 @@ function bool Act_HasAvailableActions(out array<ECPotentialTurnPhaseAction> Acti
 
 	if (Mobility > 0)
 	{
+		A.Tag = 'EntityMove';
 		A.Type = eECPTPAT_Optional;
 		A.Source = self.GetReference();
-		A.Player = `ECRULES.CurrentPlayer;
+		A.Player = ControllingPlayer;
 		A.DisplayName = "Move Unit";
 		A.bExtended = false;
 		
@@ -190,9 +200,9 @@ function bool Act_HasAvailableActions(out array<ECPotentialTurnPhaseAction> Acti
 	return false;
 }
 
-function bool Act_HasQueuedActions()
+function bool Act_CanPerformQueuedActions(StateObjectReference Player)
 {
-	return Path.Length > 0;
+	return Path.Length > 0 && ControllingPlayer == Player && Mobility > 0;
 }
 
 function Act_PerformQueuedActions()
@@ -221,8 +231,33 @@ function Act_PerformQueuedActions()
 // Gain action points for beginning the current turn
 function Act_SetupActionsForBeginTurn(XComGameState NewGameState, StateObjectReference Player)
 {
-	`log("Gain Action Points");
-	Mobility = 3;
+	if (ControllingPlayer == Player)
+	{
+		`log("Gain Action Points");
+		Mobility = 3;
+	}
+}
+
+
+// IEC_VisibilityInterface
+
+function int Vis_GetSightRange()
+{
+	return 3;
+}
+
+function int Vis_GetSightHeight()
+{
+	return 1;
+}
+
+function array<StateObjectReference> Vis_GetPlayers()
+{
+	local array<StateObjectReference> Ret;
+
+	Ret.AddItem(ControllingPlayer);
+
+	return Ret;
 }
 
 defaultproperties

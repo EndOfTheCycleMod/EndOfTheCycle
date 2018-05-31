@@ -96,7 +96,7 @@ simulated function bool IsSavingAllowed()
 
 simulated function bool WaitingForUserContinue()
 {
-	return bWaitingForNewStates && !BuildingLatentGameState;
+	return bWaitingForNewStates || BuildingLatentGameState;
 }
 
 /// <summary>
@@ -164,6 +164,12 @@ state InitGame
 		`ECGAME.DefaultPathfinder.Init(`ECMAP);
 	}
 
+	function CreateVisibilityManager()
+	{
+		`ECGAME.VisibilityManager = new class'EC_VisibilityManager';
+		`ECGAME.VisibilityManager.Init(`ECMAP);
+	}
+
 	function bool MapLoading()
 	{
 		return !`ECMAP.IsLoaded();
@@ -181,6 +187,7 @@ Begin:
 	`XCOMVISUALIZATIONMGR.CheckStartBuildTree();
 
 	CreateDefaultPathfinder();
+	CreateVisibilityManager();
 	SyncVisualizers();
 	Sleep(1.0f);
 
@@ -201,15 +208,21 @@ static function SyncVisualizers()
 {
 	local XComGameStateHistory History;
 	local XComGameState_BaseObject Entity;
+	local EC_GameState_StrategyPlayer Player;
 
 	History = `XCOMHISTORY;
 	
+	// First, create all visualizers, then sync them
 	foreach History.IterateByClassType(class'XComGameState_BaseObject', Entity)
 	{
 		if (IEC_StrategyWorldEntity(Entity) != none)
 		{
 			IEC_StrategyWorldEntity(Entity).Ent_FindOrCreateVisualizer();
 		}
+	}
+	foreach History.IterateByClassType(class'EC_GameState_StrategyPlayer', Player)
+	{
+		Player.CreateVisualizer();
 	}
 
 	foreach History.IterateByClassType(class'XComGameState_BaseObject', Entity)
@@ -313,18 +326,41 @@ state ProcessingActiveTurnPhase
 		LocalResult = EC_GameState_StrategyTurnPhase(CachedHistory.GetGameStateForObjectID(CurrentTurnPhase.ObjectID)).ProcessTurnPhase();
 
 		// We only wait for new states if we have available actions and the turn phase did not do any processing on its own
-		// Any game state submission resets bWaitingForNewStates to false
+		// Any game state submission (even in ProcessTurnPhase()) resets bWaitingForNewStates to false
 		bWaitingForNewStates = bWaitingForNewStates && LocalResult.Type == eECTPPRT_ActionsAvailable;
 		return LocalResult;
 	}
 
+	function NotifyPlayersActionsAvailable()
+	{
+		local XComGameStateHistory History;
+		local EC_GameState_StrategyPlayer Player;
+
+		`assert(CachedTurnPhaseResult.Type == eECTPPRT_ActionsAvailable);
+
+		History = `XCOMHISTORY;
+
+		foreach History.IterateByClassType(class'EC_GameState_StrategyPlayer', Player)
+		{
+			if (PlayerHasActionsAvailable(Player.GetReference()))
+			{
+				EC_StrategyPlayer(Player.GetVisualizer()).OnActionsAvailable();
+			}
+		}
+	}
+
 Begin:
+	bWaitingForNewStates = false;
 	do
 	{
 		// Wait for the visualizer before waiting for new states
-		while(EndOfTurnWaitingForVisualizer())
+		while (EndOfTurnWaitingForVisualizer())
 		{
 			Sleep(0.0f);
+		}
+		if (bWaitingForNewStates)
+		{
+			NotifyPlayersActionsAvailable();
 		}
 		// if actions are available, wait
 		while (WaitingForUserContinue())
@@ -333,8 +369,8 @@ Begin:
 		}
 		// Process turn phase
 		CachedTurnPhaseResult = StepTurnPhase();
-	} until(CachedTurnPhaseResult.Type == eECTPPRT_End);
-	while(EndOfTurnWaitingForVisualizer())
+	} until (CachedTurnPhaseResult.Type == eECTPPRT_End);
+	while (EndOfTurnWaitingForVisualizer())
 	{
 		Sleep(0.0f);
 	}
@@ -386,20 +422,36 @@ simulated function name GetNextState(name CurrentState, optional name DefaultPha
 	return DefaultPhaseName;
 }
 
-
-simulated function array<ECPotentialTurnPhaseAction> GetActionsForPlayer(StateObjectReference Player)
+// Actions aren't directly tied to whose turn it is -- players may perform some actions on another player's
+// turn. We give the not-active player the advantage here and let him do his thing before giving control back to the
+// player.
+// If it's <Player>'s turn, collect actions unless another player has any actions
+// If it's not <Player>'s turn, collect actions
+function array<ECPotentialTurnPhaseAction> GetActionsForPlayer(StateObjectReference Player)
 {
-	local array<ECPotentialTurnPhaseAction> Actions;
+	local array<ECPotentialTurnPhaseAction> Actions, EmptyActions;
 	local int i;
 
+	EmptyActions.Length = 0;
 	for (i = 0; i < CachedTurnPhaseResult.PotentialActions.Length; i++)
 	{
+		if (!(CachedTurnPhaseResult.PotentialActions[i].Player.ObjectID == Player.ObjectID) && Player == CurrentPlayer)
+		{
+			// There are actions for another player, and we are looking for actions for the current player
+			// Bail out and let the other player do their thing first
+			return EmptyActions;
+		}
 		if (CachedTurnPhaseResult.PotentialActions[i].Player.ObjectID == Player.ObjectID)
 		{
 			Actions.AddItem(CachedTurnPhaseResult.PotentialActions[i]);
 		}
 	}
 	return Actions;
+}
+
+function bool PlayerHasActionsAvailable(StateObjectReference Player)
+{
+	return GetActionsForPlayer(Player).Length > 0;
 }
 
 
@@ -459,7 +511,7 @@ simulated function DrawDebugLabel(Canvas kCanvas)
 		Tile = Map.GetCursorHighlightedTile();
 		if (Tile >= 0)
 		{
-			kStr = kStr $ Map.GetPositionDebugInfo(Tile) $ "\n";
+			kStr = kStr $ Map.GetPositionDebugInfo(Tile) @ "(" $ Map.GetTileInfo(Tile) $ ")\n";
 		}
 		else
 		{
@@ -480,11 +532,13 @@ simulated event Tick(float DeltaTime)
 	local rotator Rot;
 	local int Tile;
 
-	Tile = `ECMAP.GetCursorHighlightedTile();
-	if (Tile >= 0)
+	if (`ECMAP != none)
 	{
-		`ECMAP.GetWorldPositionAndRotation(Tile, Pos, Rot);
-		`ECSHAPES.DrawSphere(Pos, vect(15,15,15), MakeLinearColor(0,0,1,1), false);
+		Tile = `ECMAP.GetCursorHighlightedTile();
+		if (Tile >= 0)
+		{
+			`ECMAP.GetWorldPositionAndRotation(Tile, Pos, Rot);
+			`ECSHAPES.DrawSphere(Pos, vect(15,15,15), MakeLinearColor(0,0,1,1), false);
+		}
 	}
-	`ECSHAPES.DrawSphere(vect(0,0,10), vect(45,45,45), MakeLinearColor(0,0,1,1), false);
 }

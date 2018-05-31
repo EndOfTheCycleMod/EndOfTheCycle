@@ -1,7 +1,9 @@
 class EC_StrategyGame extends XComGameInfo;
 
+// TODO: Is this the right place for it?
 var IEC_StrategyMap Map;
 var EC_AbstractPathfinder DefaultPathfinder;
+var EC_VisibilityManager VisibilityManager;
 
 
 var SimpleShapeManager ShapeMgr;
@@ -24,7 +26,6 @@ function StartMatch()
 
 	if (bStandardLoad) 
 	{
-
 		//We came from a load menu
 		OnlineEventMgr.FinishLoadGame();			
 		`GAMERULES.LoadGame();
