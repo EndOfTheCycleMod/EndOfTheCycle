@@ -170,6 +170,12 @@ state InitGame
 		`ECGAME.VisibilityManager.Init(`ECMAP);
 	}
 
+	function CreateTerritoryManager()
+	{
+		`ECGAME.TerritoryManager = new class'EC_TerritoryManager';
+		`ECGAME.TerritoryManager.Init(`ECMAP);
+	}
+
 	function bool MapLoading()
 	{
 		return !`ECMAP.IsLoaded();
@@ -188,6 +194,7 @@ Begin:
 
 	CreateDefaultPathfinder();
 	CreateVisibilityManager();
+	CreateTerritoryManager();
 	SyncVisualizers();
 	Sleep(1.0f);
 

@@ -90,7 +90,7 @@ exec function DropTestSoldier()
 	if (Tile > INDEX_NONE)
 	{
 		NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Dropping test \"soldier\"");
-		XComGameStateContext_ChangeContainer(NewGameState.GetContext()).BuildVisualizationFn = VisualizeTestSoldier;
+		XComGameStateContext_ChangeContainer(NewGameState.GetContext()).BuildVisualizationFn = VisualizeTestEntity;
 
 		NewUnit = EC_GameState_SimpleUnit(NewGameState.CreateNewStateObject(class'EC_GameState_SimpleUnit'));
 		NewUnit.ControllingPlayer = `ECRULES.CurrentPlayer;
@@ -100,18 +100,46 @@ exec function DropTestSoldier()
 	}
 }
 
-static function VisualizeTestSoldier(XComGameState VisualizeGameState)
+exec function DropTestHQ()
+{
+	local XComGameState NewGameState;
+	local EC_GameState_SimpleHeadquarters NewHQ;
+	local int Tile;
+
+	Tile = `ECMAP.GetCursorHighlightedTile();
+
+	if (Tile > INDEX_NONE)
+	{
+		NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Dropping test \"HQ\"");
+		XComGameStateContext_ChangeContainer(NewGameState.GetContext()).BuildVisualizationFn = VisualizeTestEntity;
+
+		NewHQ = EC_GameState_SimpleHeadquarters(NewGameState.CreateNewStateObject(class'EC_GameState_SimpleHeadquarters'));
+		NewHQ.ControllingPlayer = `ECRULES.CurrentPlayer;
+		NewHQ.Ent_ForceSetPosition(Tile, NewGameState);
+		`GAMERULES.SubmitGameState(NewGameState);
+	}
+}
+
+static function VisualizeTestEntity(XComGameState VisualizeGameState)
 {
 	// TODO: ACTIONS!! For now we just sync directly because cheats and tests
-	local EC_GameState_SimpleUnit Unit;
+	local XComGameState_BaseObject Entity;
 	`log("Visualization is working!");
-	foreach VisualizeGameState.IterateByClassType(class'EC_GameState_SimpleUnit', Unit)
+	foreach VisualizeGameState.IterateByClassType(class'XComGameState_BaseObject', Entity)
 	{
-		break;
+		if (IEC_StrategyWorldEntity(Entity) != none)
+		{
+			break;
+		}
 	}
-	`assert(Unit != none);
-	Unit.Ent_FindOrCreateVisualizer();
-	Unit.Ent_SyncVisualizer(VisualizeGameState);
+	`assert(Entity != none);
+	IEC_StrategyWorldEntity(Entity).Ent_FindOrCreateVisualizer();
+	IEC_StrategyWorldEntity(Entity).Ent_SyncVisualizer(VisualizeGameState);
+}
+
+static function VisualizeTestSoldier(XComGameState VisualizeGameState)
+{
+	VisualizeTestEntity(VisualizeGameState);
 }
 
 exec function ShowVisibilityAsBorder()

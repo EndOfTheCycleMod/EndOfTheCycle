@@ -1,5 +1,6 @@
 class EC_StrategyPlayerTemplate extends EC_StrategyElementTemplate;
 
+var LinearColor PlayerColor;
 var class<EC_StrategyPlayer> PlayerVisClass;
 
 function EC_GameState_StrategyPlayer CreateInstanceFromTemplate(XComGameState NewGameState)

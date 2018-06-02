@@ -4,6 +4,7 @@ class EC_StrategyGame extends XComGameInfo;
 var IEC_StrategyMap Map;
 var EC_AbstractPathfinder DefaultPathfinder;
 var EC_VisibilityManager VisibilityManager;
+var EC_TerritoryManager TerritoryManager;
 
 
 var SimpleShapeManager ShapeMgr;

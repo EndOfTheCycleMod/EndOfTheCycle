@@ -157,7 +157,7 @@ $modSrcRoot = "$srcDirectory\$modNameCanonical"
 $stagingPath = "{0}\XComGame\Mods\{1}" -f $sdkPath, $modNameCanonical
 Write-Host "Cleaning mod project at $stagingPath...";
 if (Test-Path $stagingPath) {
-    Remove-Item $stagingPath -Recurse -WarningAction SilentlyContinue;
+    Remove-Item $stagingPath -Force -Recurse -WarningAction SilentlyContinue;
 }
 Write-Host "Cleaned."
 
