@@ -1,0 +1,1 @@
+class EC_TerritoryManager extends Actor;

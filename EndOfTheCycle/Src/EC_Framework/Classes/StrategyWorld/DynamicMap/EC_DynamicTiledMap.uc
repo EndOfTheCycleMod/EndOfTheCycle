@@ -2,6 +2,7 @@
 class EC_DynamicTiledMap extends EC_AbstractHexMap;
 
 const SQRT_3 = 1.73205080756f;
+var const vector VertexOffsets[6];
 
 var StaticMesh HexMesh;
 
@@ -169,6 +170,36 @@ function int GetTileElevation(int Pos)
 	}
 }
 
+function array<InterpCurveVector> TraceBorders(array<int> Tiles, float Alpha)
+{
+	local array<BorderTrace> Borders;
+	local BorderTrace B;
+	local int i, j;
+	local array<InterpCurveVector> Ret;
+	local InterpCurveVector Curve, EmptyCurve;
+	local InterpCurvePointVector Point;
+
+	Borders = Geom.TraceBorders(Tiles);
+
+	EmptyCurve.InterpMethod = IMT_UseFixedTangentEvalAndNewAutoTangents;
+	Point.InterpMode = CIM_Linear; // TEST
+
+	for (i = 0; i < Borders.Length; i++)
+	{
+		Curve = EmptyCurve;
+		B = Borders[i];
+		for (j = 0; j < B.Vertices.Length; j++)
+		{
+			Point.InVal = j;
+			Point.OutVal = TileMeshes[B.Vertices[j].X].Translation + VertexOffsets[B.Vertices[j].Y] * HEX_SIZE * -1 * Alpha + vect(0,0,10);
+			Curve.Points.AddItem(Point);
+		}
+		Ret.AddItem(Curve);
+	}
+
+	return Ret;
+}
+
 static function CreateRandomMap(XComGameState NewGameState)
 {
 	local EC_GameState_MapTileData Data;
@@ -222,6 +253,12 @@ event Tick(float DeltaTime)
 
 defaultproperties
 {
+	VertexOffsets(0)=(X=0,Y=1,Z=0)
+	VertexOffsets(1)=(X=-0.866,Y=0.5,Z=0)
+	VertexOffsets(2)=(X=-0.866,Y=-0.5,Z=0)
+	VertexOffsets(3)=(X=0,Y=-1,Z=0)
+	VertexOffsets(4)=(X=0.866,Y=-0.5,Z=0)
+	VertexOffsets(5)=(X=0.866,Y=0.5,Z=0)
 	// TODO: Evaluate
 	bStatic=false
 	bStaticCollision=true

@@ -100,7 +100,16 @@ function array<int> GetTilesInRange(int Pos, int Range)
 
 function bool TraceTiles(int Start, int End, optional int HeightOffset = 0, optional int SightRange = -1)
 {
+	`REDSCREEN("Error:" @ default.Class @ "needs to override" @ GetFuncName());
+	return false;
+}
 
+function array<InterpCurveVector> TraceBorders(array<int> Tiles, float Alpha)
+{
+	local array<InterpCurveVector> Ret;
+	`REDSCREEN("Error:" @ default.Class @ "needs to override" @ GetFuncName());
+	Ret.Length = 0;
+	return Ret;
 }
 
 function array<int> GetVisibleTiles(int Start, int SightRange, optional int HeightOffset = 0)
@@ -144,9 +153,7 @@ function array<IntPoint> GetValidPositionRanges()
 
 function string GetPositionDebugInfo(int Pos)
 {
-	local IntPoint P;
-	P = Geom.GetTile2DCoords(Pos);
-	return "(X:" @ P.X $ ", Y:" @ P.Y $ ")";
+	return Geom.GetPositionDebugInfo(Pos);
 }
 
 
@@ -250,7 +257,10 @@ function UpdateFOW(array<FOWUpdateParams> Params, bool Immediate)
 	local IntPoint P;
 	local RenderInstruction Inst;
 
-	FOWTexture.bNeedsUpdate = true;
+	if (FOWTexture != none)
+	{
+		FOWTexture.bNeedsUpdate = true;
+	}
 
 	Inst.Dim.X = 1;
 	Inst.Dim.Y = 1;
@@ -269,7 +279,10 @@ function Clear(EECVisState NewState)
 {
 	local RenderInstruction Inst;
 
-	FOWTexture.bNeedsUpdate = true;
+	if (FOWTexture != none)
+	{
+		FOWTexture.bNeedsUpdate = true;
+	}
 
 	Inst.Source.X = 0;
 	Inst.Source.Y = 0;

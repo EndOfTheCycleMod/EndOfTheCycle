@@ -1,5 +1,8 @@
 class EC_GameState_UnitActionsSubsystem extends EC_GameState_StrategyTurnPhaseSubsystem;
 
+
+const MAX_QUEUE_ITERATIONS = 15;
+
 function OnBeginTurnPhase(StateObjectReference TurnPhase, XComGameState NewGameState)
 {
 	local XComGameStateHistory History;
@@ -30,7 +33,7 @@ function PostProcessTurnPhase(StateObjectReference PhaseRef, out array<ECPotenti
 	local XComGameState_BaseObject O;
 	local IEC_ActionInterface ActionO;
 	local array<ECPotentialTurnPhaseAction> LocalActions;
-	local int i;
+	local int i, Iterations;
 	local bool PerformActions;
 	History = `XCOMHISTORY;
 
@@ -42,7 +45,8 @@ function PostProcessTurnPhase(StateObjectReference PhaseRef, out array<ECPotenti
 	if (Step == eECTPS_Finalize)
 	{
 		PerformActions = true;
-		while (PerformActions)
+		Iterations = 0;
+		while (PerformActions && Iterations < MAX_QUEUE_ITERATIONS)
 		{
 			PerformActions = false;
 			foreach History.IterateByClassType(class'XComGameState_BaseObject', O)
@@ -54,9 +58,14 @@ function PostProcessTurnPhase(StateObjectReference PhaseRef, out array<ECPotenti
 					{
 						PerformActions = true;
 						ActionO.Act_PerformQueuedActions();
+						if (Iterations == MAX_QUEUE_ITERATIONS - 1)
+						{
+							`REDSCREEN(self.Class.Name $ ":" $ GetFuncName() $ ":" @ ActionO.Class.Name @ "(" $ O.ObjectID $ ") took too many iterations and couldn't complete queued actions. FIX THIS");
+						}
 					}
 				}
 			}
+			Iterations++;
 		}
 	}
 

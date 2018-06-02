@@ -113,3 +113,33 @@ static function VisualizeTestSoldier(XComGameState VisualizeGameState)
 	Unit.Ent_FindOrCreateVisualizer();
 	Unit.Ent_SyncVisualizer(VisualizeGameState);
 }
+
+exec function ShowVisibilityAsBorder()
+{
+	local XComRenderablePathComponent Comp;
+	local Actor Map;
+	local array<int> Tiles;
+	local int i;
+	local array<InterpCurveVector> Curves;
+
+	Map = Actor(`ECMAP);
+
+	Tiles = `ECGAME.VisibilityManager.GetVisibleTilesForPlayer(`ECCTRL.ControllingPlayer);
+
+	Curves = `ECMAP.TraceBorders(Tiles, 0.95f);
+
+	for (i = 0; i < Curves.Length; i++)
+	{
+		Comp = new class'XComRenderablePathComponent';	
+		Comp.iPathLengthOffset = 0;
+		Comp.fEmitterTimeStep = 1;
+		Comp.fRibbonWidth = 10.0f;
+		Comp.bTranslucentIgnoreFOW = true;
+		Comp.PathType = eCU_NoConcealment;
+
+		Map.AttachComponent(Comp);
+
+		Comp.SetMaterial(MaterialInterface(`CONTENT.RequestGameArchetype("EC_Border.M_Border")));
+		Comp.UpdatePathRenderData(Curves[i], Curves[i].Points[Curves[i].Points.Length - 1].InVal, none, `ECCAMSTACK.GetCameraLocationAndOrientation().Location);
+	}
+}

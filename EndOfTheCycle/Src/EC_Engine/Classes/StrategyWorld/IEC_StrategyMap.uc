@@ -56,6 +56,12 @@ function bool TraceTiles(int Start, int End, optional int HeightOffset = 0, opti
 // Return all tiles visible from Start + HeightOffset within Range
 function array<int> GetVisibleTiles(int Start, int SightRange, optional int HeightOffset = 0);
 
+// Return an array of Vector curves in world space representing all borders of this set of tiles
+// Alpha is a [0;1] factor where Alpha = 1 -> Curve Points are exactly on the vertices and
+// Alpha = 0 -> Curve Points degrade to the center of border tiles
+// This factor can be used to make sure that several borders don't overlap
+function array<InterpCurveVector> TraceBorders(array<int> Tiles, float Alpha);
+
 // Return an array of inclusive ranges representing valid tile handles
 // The Map interface doesn't require that this is a good representation,
 // but it's rather likely that tile handles will be *somewhat* continuous
