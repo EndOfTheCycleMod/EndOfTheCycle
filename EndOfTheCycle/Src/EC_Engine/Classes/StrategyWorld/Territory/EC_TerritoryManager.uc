@@ -76,6 +76,10 @@ function array<IEC_TerritoryAnchor> GetSortedAnchors(optional int HistoryIndex =
 		}
 	}
 	// TODO: Doesn't work for large arrays
+	if (Anchors.Length > 90)
+	{
+		`REDSCREENONCE("Warning, number of Territory Anchors exceeded 90. Please update" @ Class.Name $ ":" $ GetFuncName());
+	}
 	Anchors.Sort(ByPriority);
 	return Anchors;
 }
@@ -85,6 +89,7 @@ function int ByPriority(IEC_TerritoryAnchor A, IEC_TerritoryAnchor B)
 	return A.Ter_GetPriority() - B.Ter_GetPriority();
 }
 
+// TODO: Improve so that we don't recalculate it every single time
 function SyncTerritory(optional int HistoryIndex = -1)
 {
 	local array<PlayerTerritoryListItem> Lists;
@@ -129,9 +134,8 @@ function SyncTerritory(optional int HistoryIndex = -1)
 				MapActor.AttachComponent(Comp);
 			}
 
-			// Warning: The camera location changes, which may change the way XComRenderablePathComponent sets up the emitter
-			// Can we change this to a more stable position (curve midpoint?)
-			Comp.UpdatePathRenderData(Curves[i], Curves[i].Points[Curves[i].Points.Length - 1].InVal, none, `ECCAMSTACK.GetCameraLocationAndOrientation().Location);
+			// Use a Z offset of 10000 to convince the ribbon to point up
+			Comp.UpdatePathRenderData(Curves[j], Curves[j].Points[Curves[j].Points.Length - 1].InVal, none, `ECCAMSTACK.GetCameraLocationAndOrientation().Location +  vect(0,0,10000));
 		}
 	}
 

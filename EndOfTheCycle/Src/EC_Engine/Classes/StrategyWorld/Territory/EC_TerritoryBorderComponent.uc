@@ -6,6 +6,6 @@ defaultproperties
 	iPathLengthOffset=0
 	fEmitterTimeStep=1
 	fRibbonWidth=10.0f
-	bTranslucentIgnoreFOW=true
+	bTranslucentIgnoreFOW=false
 	PathType=eCU_NoConcealment
 }

@@ -207,6 +207,11 @@ exec function SyncFOW()
 	`ECGAME.VisibilityManager.SyncFOW();
 }
 
+exec function SyncTerritory()
+{
+	`ECGAME.TerritoryManager.SyncTerritory();
+}
+
 defaultproperties
 {
 	PathingSourceTile=-1

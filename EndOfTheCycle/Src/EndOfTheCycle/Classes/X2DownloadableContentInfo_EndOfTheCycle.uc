@@ -32,7 +32,7 @@ static event PatchPPChain()
 	MIC.SetParent(TempMat);
 	TempEffect = new(DefaultPP) class'MaterialEffect';
 	TempEffect.Material = MIC;
-	TempEffect.SceneDPG = SDPG_World;
+	TempEffect.SceneDPG = SDPG_PostProcess;
 	TempEffect.EffectName = TempMat.Name;
 	TempEffect.bShowInGame = true;
 
@@ -162,7 +162,7 @@ exec function ShowVisibilityAsBorder()
 		Comp.iPathLengthOffset = 0;
 		Comp.fEmitterTimeStep = 1;
 		Comp.fRibbonWidth = 10.0f;
-		Comp.bTranslucentIgnoreFOW = true;
+		Comp.bTranslucentIgnoreFOW = false;
 		Comp.PathType = eCU_NoConcealment;
 
 		Map.AttachComponent(Comp);
